@@ -33,15 +33,17 @@ public class CrotalReader {
     private static final double MAXDENSITYNUMBER = 2500.0;
     private static final double MINDENSITYNUMBER = 500.0;
     
-    private static final int MAXPARTICLESNUMBER = 4;
+    private static int MAXPARTICLESNUMBER = 4;
     
 
     /**
      * @param args the command line arguments
      */
-    public static ImagePlus VideoVigilanciaProcess(String sImagePath) {
+    public static ImagePlus VideoVigilanciaProcess(String sImagePath, int iNumbersToSearch) {
         //get the angle to rotate the image
-        Double dAngle = getRotationAngle(sImagePath);  
+        Double dAngle = getRotationAngle(sImagePath);
+        
+        MAXPARTICLESNUMBER = iNumbersToSearch;
         
         //get the image with the numbers to read
         ImagePlus img = getNumberImage(sImagePath, dAngle);
@@ -162,10 +164,10 @@ public class CrotalReader {
 
                 iMaxParticles = (nParticles>iMaxParticles)?nParticles:iMaxParticles;
                 
-                iInitialThreshold = iInitialThreshold + (9 - (int)Math.pow(2,nParticles));
+                iInitialThreshold = iInitialThreshold + ((2 * MAXPARTICLESNUMBER) + 1  - (2 * nParticles));
                                 
             }
-            dMinSize = dMinSize - (400/(iMaxParticles+1));
+            dMinSize = dMinSize - ((100 * MAXPARTICLESNUMBER)/(iMaxParticles+1));
         }
         
         ImageProcessor  oFinalImageProcessor = img.getProcessor();

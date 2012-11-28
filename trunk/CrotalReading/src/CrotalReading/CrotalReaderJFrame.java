@@ -201,7 +201,9 @@ public class CrotalReaderJFrame extends javax.swing.JFrame {
          String sImagePath = txtFilePath.getText();
         if(sImagePath != ""){
             
-            ImageCanvas oImageCanvas = new ImageCanvas(CrotalReader.VideoVigilanciaProcess(sImagePath));
+            int iNumbersToSearch = Integer.parseInt(jTxtNumberDet.getText().trim());                   
+            
+            ImageCanvas oImageCanvas = new ImageCanvas(CrotalReader.VideoVigilanciaProcess(sImagePath, iNumbersToSearch));
             
             jPImage.removeAll();;
             jPImage.add(oImageCanvas);
