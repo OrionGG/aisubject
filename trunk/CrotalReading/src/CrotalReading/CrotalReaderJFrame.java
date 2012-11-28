@@ -41,7 +41,7 @@ public class CrotalReaderJFrame extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        txtFilePath.setText("D:\\Master Vision Artificial\\AI\\Crotal1.tif");
+        txtFilePath.setText("D:\\Master Vision Artificial\\AI\\Practicas\\Tema5-MuestraCrotales\\Muestra\\Crotal1.tif");
         txtFilePath.setToolTipText("");
 
         jLabel1.setText("Image File:");
