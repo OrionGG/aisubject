@@ -39,19 +39,14 @@ public class CrotalReader {
     /**
      * @param args the command line arguments
      */
-    public static void VideoVigilanciaProcess(String sImagePath) {
+    public static ImagePlus VideoVigilanciaProcess(String sImagePath) {
         //get the angle to rotate the image
-        double dAngle = getRotationAngle(sImagePath);  
+        Double dAngle = getRotationAngle(sImagePath);  
         
         //get the image with the numbers to read
         ImagePlus img = getNumberImage(sImagePath, dAngle);
                 
-        //Presentarla en pantalla
-        ImageWindow w = new ImageWindow(img);
-        w.centerNextImage();
-        
-        img.show();
-        
+        return img;
         
     }
     
@@ -125,43 +120,26 @@ public class CrotalReader {
         
     }
 
-    private static double getRotationAngle(String sImagePath) {
+    public static double getRotationAngle(String sImagePath) {
+        double dAngle = 0.0;
         
-        Opener opener = new Opener(); 
-        ImagePlus img = null;
-        try{
-            img = opener.openImage(sImagePath);
+        ImagePlus oImagePlus = openImage(sImagePath);
+        
+        if(oImagePlus != null){        
+            ImageProcessor oImageProcessor = prepareImageForRotation(oImagePlus);      
+
+            //gets all pixels of the image
+            int[][] aPixels = oImageProcessor.getIntArray();
+
+            //gets the lower point of the crotal
+            Point oLowerPoint = GetLowerPoint(oImageProcessor, aPixels);
+
+            //gets the lower line of the crotal
+            Line oLine = GetStraightLine(oImageProcessor, oLowerPoint, aPixels);
+
+            dAngle = oLine.getAngle()*63.661977236758* (-1);
         }
-        catch(Exception e){
-            
-            int a = 0;
-        }
-        
-        if(img == null){
-            return 0;            
-        }
-        
-        ImageProcessor  oImageP = img.getProcessor();
-        oImageP.autoThreshold();
-        
-        IJ.run(img, "Convert to Mask", "");
-        IJ.run(img, "Make Binary", "");
-
-        //remove lower line
-        oImageP.erode();
-        //delete noise
-        oImageP.dilate();
-
-        //gets all pixels of the image
-        int[][] aPixels = oImageP.getIntArray();
-
-        //gets the lower point of the crotal
-        Point oLowerPoint = GetLowerPoint(oImageP, aPixels);
-
-        //gets the lower line of the crotal
-        Line oLine = GetStraightLine(oImageP, oLowerPoint, aPixels);
-
-        return oLine.getAngle()*63.661977236758* (-1);
+        return dAngle;
     }
 
     private static ImagePlus getNumberImage(String sImagePath, double dAngle) {
@@ -178,7 +156,7 @@ public class CrotalReader {
             while(nParticles < MAXPARTICLESNUMBER && iInitialThreshold < MAXTHRESHOLD ){
                 System.out.println("Threshold: " + iInitialThreshold);
                 
-                img = prepareImage(sImagePath, dAngle, iInitialThreshold);
+                img = prepareImageForGetNumbers(sImagePath, dAngle, iInitialThreshold);
                 
                 nParticles = getParticles(img, dMinSize);
 
@@ -196,7 +174,7 @@ public class CrotalReader {
         return img;
     }
 
-    private static ImagePlus prepareImage(String sImagePath, double dAngle, int iInitialThreshold) {
+    private static ImagePlus prepareImageForGetNumbers(String sImagePath, double dAngle, int iInitialThreshold) {
         Opener opener = new Opener(); 
         ImagePlus img = opener.openImage(sImagePath);
 
@@ -214,6 +192,17 @@ public class CrotalReader {
         oImageProcessor.rotate(dAngle);
         
         return img;
+    }
+    
+    public static ImagePlus rotateImage(String sImagePath){        
+        //get the angle to rotate the image
+        double dAngle = getRotationAngle(sImagePath);
+        
+        ImagePlus oImagePlus = openImage(sImagePath);
+        ImageProcessor  oImageProcessor = prepareImageForRotation(oImagePlus);
+        oImageProcessor.rotate(dAngle);
+        
+        return oImagePlus;
     }
 
     private static void dilateDigits(ImageProcessor oFinalImageProcessor) {        
@@ -240,6 +229,35 @@ public class CrotalReader {
 
         int nParticles = oResultsTable.getCounter();    
         return nParticles;
+    }
+
+    private static ImageProcessor prepareImageForRotation(ImagePlus img) {
+        ImageProcessor  oImageProcessor = img.getProcessor();        
+        oImageProcessor.autoThreshold();
+        
+        IJ.run(img, "Convert to Mask", "");
+        IJ.run(img, "Make Binary", "");
+
+        //remove lower line
+        oImageProcessor.erode();
+        //delete noise
+        oImageProcessor.dilate();
+        
+        return oImageProcessor;
+    }
+
+    private static ImagePlus openImage(String sImagePath) {
+        Opener opener = new Opener(); 
+        ImagePlus oImagePlus = null;
+        try{
+            oImagePlus = opener.openImage(sImagePath);
+        }
+        catch(Exception e){
+            
+            int a = 0;
+        }
+        
+        return oImagePlus;
     }
     
 }

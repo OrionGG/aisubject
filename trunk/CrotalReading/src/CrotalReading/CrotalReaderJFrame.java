@@ -3,6 +3,7 @@
  * and open the template in the editor.
  */
 package CrotalReading;
+import ij.gui.ImageCanvas;
 import java.io.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -16,6 +17,7 @@ import javax.swing.filechooser.*;
 public class CrotalReaderJFrame extends javax.swing.JFrame {
 
     JFileChooser fc;
+    private double dAngle = 0.0;
     /**
      * Creates new form CrotalReaderJFrame
      */
@@ -38,6 +40,11 @@ public class CrotalReaderJFrame extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         btnBrowe = new javax.swing.JButton();
         btnRotate = new javax.swing.JButton();
+        jProgressBar1 = new javax.swing.JProgressBar();
+        label1 = new java.awt.Label();
+        jPImage = new javax.swing.JPanel();
+        btnNumbers = new javax.swing.JButton();
+        jTxtNumberDet = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -60,32 +67,84 @@ public class CrotalReaderJFrame extends javax.swing.JFrame {
             }
         });
 
+        label1.setText("Numbers to Detect:");
+
+        javax.swing.GroupLayout jPImageLayout = new javax.swing.GroupLayout(jPImage);
+        jPImage.setLayout(jPImageLayout);
+        jPImageLayout.setHorizontalGroup(
+            jPImageLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+        jPImageLayout.setVerticalGroup(
+            jPImageLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 516, Short.MAX_VALUE)
+        );
+
+        btnNumbers.setLabel("Numbers");
+        btnNumbers.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnNumbersActionPerformed(evt);
+            }
+        });
+
+        jTxtNumberDet.setText("4");
+        jTxtNumberDet.setMaximumSize(new java.awt.Dimension(3, 1));
+        jTxtNumberDet.setMinimumSize(new java.awt.Dimension(1, 1));
+        jTxtNumberDet.setPreferredSize(new java.awt.Dimension(15, 20));
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(txtFilePath, javax.swing.GroupLayout.PREFERRED_SIZE, 365, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(btnRotate)
-                    .addComponent(btnBrowe))
-                .addContainerGap(16, Short.MAX_VALUE))
+                    .addComponent(jPImage, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(label1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addGap(5, 5, 5)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(txtFilePath, javax.swing.GroupLayout.PREFERRED_SIZE, 614, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jTxtNumberDet, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(8, 8, 8)
+                                .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 450, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(0, 40, Short.MAX_VALUE)))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(btnBrowe, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnNumbers, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnRotate, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(50, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(12, 12, 12)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(txtFilePath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnBrowe))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 275, Short.MAX_VALUE)
-                .addComponent(btnRotate)
-                .addGap(66, 66, 66))
+                .addGap(13, 13, 13)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel1)
+                            .addComponent(txtFilePath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(label1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jTxtNumberDet, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jPImage, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(btnBrowe)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(btnRotate)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(btnNumbers)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         pack();
@@ -129,11 +188,25 @@ public class CrotalReaderJFrame extends javax.swing.JFrame {
         
         String sImagePath = txtFilePath.getText();
         if(sImagePath != ""){
-            CrotalReader.VideoVigilanciaProcess(sImagePath);
+            ImageCanvas oImageCanvas = new ImageCanvas(CrotalReader.rotateImage(sImagePath)); 
             
+            jPImage.removeAll();;
+            jPImage.add(oImageCanvas);
         }
         
     }//GEN-LAST:event_btnRotateActionPerformed
+
+    private void btnNumbersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNumbersActionPerformed
+        // TODO add your handling code here:
+         String sImagePath = txtFilePath.getText();
+        if(sImagePath != ""){
+            
+            ImageCanvas oImageCanvas = new ImageCanvas(CrotalReader.VideoVigilanciaProcess(sImagePath));
+            
+            jPImage.removeAll();;
+            jPImage.add(oImageCanvas);
+        }
+    }//GEN-LAST:event_btnNumbersActionPerformed
 
     /**
      * @param args the command line arguments
@@ -171,8 +244,13 @@ public class CrotalReaderJFrame extends javax.swing.JFrame {
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnBrowe;
+    private javax.swing.JButton btnNumbers;
     private javax.swing.JButton btnRotate;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JPanel jPImage;
+    private javax.swing.JProgressBar jProgressBar1;
+    private javax.swing.JTextField jTxtNumberDet;
+    private java.awt.Label label1;
     private javax.swing.JTextField txtFilePath;
     // End of variables declaration//GEN-END:variables
 }
