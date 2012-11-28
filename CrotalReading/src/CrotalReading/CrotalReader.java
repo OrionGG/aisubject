@@ -26,86 +26,32 @@ import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
  * @author Orion
  */
 public class CrotalReader {
+    
+    private static final int INITIALTHRESHOLD = 40;
+    private static final int MAXTHRESHOLD = 80;
+    
+    private static final double MAXDENSITYNUMBER = 2500.0;
+    private static final double MINDENSITYNUMBER = 500.0;
+    
+    private static final int MAXPARTICLESNUMBER = 4;
+    
 
     /**
      * @param args the command line arguments
      */
     public static void VideoVigilanciaProcess(String sImagePath) {
-        //Cargar imagen
-        Opener opener = new Opener();
-        ImagePlus img = opener.openImage(sImagePath);
+        //get the angle to rotate the image
+        double dAngle = getRotationAngle(sImagePath);  
         
-        
-        ImageProcessor  oImageProcessor = img.getProcessor();
-//        img.getProcessor().autoThreshold();
-//        IJ.setAutoThreshold(img, "Default");
-//        oImageProcessor.setThreshold(30, 50,1);
-        oImageProcessor.threshold(45);
-        IJ.run(img, "Convert to Mask", "");
-        IJ.run(img, "Make Binary", "");
-        oImageProcessor.invertLut();
-       
-        //remove lower line
-        oImageProcessor.dilate();
-        //delete noise
-        oImageProcessor.erode();
-        oImageProcessor.erode();
-        oImageProcessor.dilate();
-        oImageProcessor.dilate();
-
-        oImageProcessor.invertLut();
-
+        //get the image with the numbers to read
+        ImagePlus img = getNumberImage(sImagePath, dAngle);
                 
-        int[][] aPixels = oImageProcessor.getIntArray();
-        
-        Point oLowerPoint = GetLowerPoint(oImageProcessor, aPixels);
-        
-        Line oLine = GetStraightLine(oImageProcessor, oLowerPoint, aPixels);
-        
-        oImageProcessor.rotate(oLine.getAngle()*63.661977236758* (-1));
-                
-        oImageProcessor.invertLut();
-        
-        ImagePlus oImgRotated =  new ImagePlus("ImageRotated", oImageProcessor);
-        
-        ResultsTable oResultsTable = new ResultsTable();
-        
-        int[] aMeasurements = new int[]{Measurements.LABELS, Measurements.AREA, Measurements.PERIMETER, Measurements.CIRCULARITY, Measurements.RECT, Measurements.SLICE};
-        
-        int iMeasurementsValue = GetMeasurementsValue(aMeasurements);
-        
-        ParticleAnalyzer oParticleAnalyzer = new ParticleAnalyzer(
-                ParticleAnalyzer.SHOW_MASKS+ParticleAnalyzer.EXCLUDE_EDGE_PARTICLES+ParticleAnalyzer.IN_SITU_SHOW , 
-                iMeasurementsValue,
-                oResultsTable ,500.0,Double.MAX_VALUE);
-        oParticleAnalyzer.setHideOutputImage(true);
-        oResultsTable.disableRowLabels();        
-        
-        boolean b = oParticleAnalyzer.analyze(img);
-        
-        int nParticles = oResultsTable.getCounter();         
-        
-                
-        for(int j=0;j<=oResultsTable.getLastColumn();j++){
-            if(oResultsTable.getColumn(j) != null){
-                String sColumnName = oResultsTable.getColumnHeading(j);
-                
-                    System.out.println(sColumnName);
-
-                        for (int i=0; i<nParticles;i++){
-                    
-                    double dValue = oResultsTable.getValueAsDouble(j, i);
-                    System.out.print(dValue+ "; ");
-                }
-                    System.out.println();
-            }
-        }
-        
         //Presentarla en pantalla
         ImageWindow w = new ImageWindow(img);
         w.centerNextImage();
         
         img.show();
+        
         
     }
     
@@ -177,6 +123,123 @@ public class CrotalReader {
         
         return iResult;
         
+    }
+
+    private static double getRotationAngle(String sImagePath) {
+        
+        Opener opener = new Opener(); 
+        ImagePlus img = null;
+        try{
+            img = opener.openImage(sImagePath);
+        }
+        catch(Exception e){
+            
+            int a = 0;
+        }
+        
+        if(img == null){
+            return 0;            
+        }
+        
+        ImageProcessor  oImageP = img.getProcessor();
+        oImageP.autoThreshold();
+        
+        IJ.run(img, "Convert to Mask", "");
+        IJ.run(img, "Make Binary", "");
+
+        //remove lower line
+        oImageP.erode();
+        //delete noise
+        oImageP.dilate();
+
+        //gets all pixels of the image
+        int[][] aPixels = oImageP.getIntArray();
+
+        //gets the lower point of the crotal
+        Point oLowerPoint = GetLowerPoint(oImageP, aPixels);
+
+        //gets the lower line of the crotal
+        Line oLine = GetStraightLine(oImageP, oLowerPoint, aPixels);
+
+        return oLine.getAngle()*63.661977236758* (-1);
+    }
+
+    private static ImagePlus getNumberImage(String sImagePath, double dAngle) {
+        ImagePlus img = null;
+        
+        double dMinSize = MAXDENSITYNUMBER;
+        int nParticles = 0;
+        
+        while(nParticles < MAXPARTICLESNUMBER &&  MINDENSITYNUMBER < dMinSize){            
+            int iMaxParticles = 0;
+            System.out.println("dMinSize: " + dMinSize);
+            
+            int iInitialThreshold = INITIALTHRESHOLD;
+            while(nParticles < MAXPARTICLESNUMBER && iInitialThreshold < MAXTHRESHOLD ){
+                System.out.println("Threshold: " + iInitialThreshold);
+                
+                img = prepareImage(sImagePath, dAngle, iInitialThreshold);
+                
+                nParticles = getParticles(img, dMinSize);
+
+                iMaxParticles = (nParticles>iMaxParticles)?nParticles:iMaxParticles;
+                
+                iInitialThreshold = iInitialThreshold + (9 - (int)Math.pow(2,nParticles));
+                                
+            }
+            dMinSize = dMinSize - (400/(iMaxParticles+1));
+        }
+        
+        ImageProcessor  oFinalImageProcessor = img.getProcessor();
+        dilateDigits(oFinalImageProcessor);
+        
+        return img;
+    }
+
+    private static ImagePlus prepareImage(String sImagePath, double dAngle, int iInitialThreshold) {
+        Opener opener = new Opener(); 
+        ImagePlus img = opener.openImage(sImagePath);
+
+        ImageProcessor  oImageProcessor = img.getProcessor();
+        oImageProcessor.threshold(iInitialThreshold);
+
+        IJ.run(img, "Convert to Mask", "");
+        IJ.run(img, "Make Binary", "");
+
+        oImageProcessor.invertLut();
+
+        oImageProcessor.erode();
+        oImageProcessor.erode();
+
+        oImageProcessor.rotate(dAngle);
+        
+        return img;
+    }
+
+    private static void dilateDigits(ImageProcessor oFinalImageProcessor) {        
+                oFinalImageProcessor.dilate();
+                oFinalImageProcessor.dilate();
+    }
+
+    private static int getParticles(ImagePlus img, double dMinSize) {
+        
+        ResultsTable oResultsTable = new ResultsTable();
+
+        int[] aMeasurements = new int[]{Measurements.LABELS, Measurements.AREA, Measurements.PERIMETER, Measurements.CIRCULARITY, Measurements.RECT, Measurements.SLICE};
+
+        int iMeasurementsValue = GetMeasurementsValue(aMeasurements);
+
+        ParticleAnalyzer oParticleAnalyzer = new ParticleAnalyzer(
+                ParticleAnalyzer.SHOW_MASKS+ParticleAnalyzer.EXCLUDE_EDGE_PARTICLES+ParticleAnalyzer.IN_SITU_SHOW , 
+                iMeasurementsValue,
+                oResultsTable,dMinSize,4000.0);
+        oParticleAnalyzer.setHideOutputImage(true);
+        oResultsTable.disableRowLabels();        
+
+        boolean b = oParticleAnalyzer.analyze(img);
+
+        int nParticles = oResultsTable.getCounter();    
+        return nParticles;
     }
     
 }
