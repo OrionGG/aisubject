@@ -27,8 +27,8 @@ import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
  */
 public class CrotalReader {
     
-    private static final int INITIALTHRESHOLD = 40;
-    private static final int MAXTHRESHOLD = 80;
+    public static final int INITIALTHRESHOLD = 40;
+    public static final int MAXTHRESHOLD = 80;
     
     private static final double MAXDENSITYNUMBER = 2500.0;
     private static final double MINDENSITYNUMBER = 500.0;
