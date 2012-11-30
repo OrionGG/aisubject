@@ -15,6 +15,13 @@ import java.util.List;
  * @author Orion
  */
 public class CodeBarReading {
+    
+    private static final int SIZEBARS = 2;
+    private static final int INITIALBLACKBARS = 2;
+    private static final int INITIALWHITEBARS = 2;
+    
+    private static final int ENDBLACKBARS = 2;
+    private static final int ENDWHITEBARS = 2;
 
     /**
      * @param args the command line arguments
@@ -26,7 +33,7 @@ public class CodeBarReading {
         
     }
     
-    private static String readCode(ImagePlus oImagePlus){
+    private static String readFullCode(ImagePlus oImagePlus){
         
     }
     
@@ -34,32 +41,38 @@ public class CodeBarReading {
         String sResult = ""; 
         int sState = 1; 
         int posX = 0;
-        List linea = groupPixels(y, oImagePlus);
-        (vacio, codigo, posX) = LeerInicio(línea,posX);
+        ArrayList<Integer> line = groupPixels(y, oImagePlus);
+        CodeReader oCodeReader = new CodeReader();
+        oCodeReader.setCode("");
+        oCodeReader.setPos(posX);
+        oCodeReader.setSingleBarSize(getSingleBarSize(line));
+        
+        readStart(line, oCodeReader);
         
         while(true) {
             switch(sState){
                 case 1:
-                    if (!vacio){                       
-                        sResult += codigo;
-                        (vacio, codigo, posX) = LeerCodigo(línea,posX);
+                    if (!oCodeReader.isEmpty()){          
+                        readCode(line,oCodeReader);
                         sState = 2; 
                     }
                     else sState = 4;
                     break;
                 case 2:
-                    if (!vacio){                        
-                        sResult += codigo;
-                        (vacio, codigo, posX) = LeerCodigo(línea,posX);
+                    if (!isEnd(oCodeReader) && !oCodeReader.isEmpty()){                        
+                        sResult += oCodeReader.getCode();
+                        readCode(line,oCodeReader);
                     }
                     else sState = 3;
                     break;
                 case 3:
-                    return sResult;
+                    if(isEnd(oCodeReader)){
+                        return sResult;
+                    }
+                    else sState = 4;
                     break;
                 case 4:
                     return "";
-                    break;
             }
         }
     }
@@ -107,12 +120,15 @@ public class CodeBarReading {
         return iResult;
     }
     
-    public static char getCode(int pos, ArrayList<Integer> aCodes){
+    public static char getChar(int iCode){
         
         char cResult = ' ';
-        int iCode = aCodes.get(pos);        
-        
+                
         switch(iCode) {
+            case 0:  cResult = 'S';
+                     break;
+            case 2:  cResult = 'E';
+                     break;
             case 3:  cResult = '7';
                      break;
             case 5:  cResult = '4';
@@ -138,9 +154,97 @@ public class CodeBarReading {
         }
         return cResult;
     }
-    
-    public static String leerLinea(int y, Image img){
+
+    private static boolean readStart(ArrayList<Integer> line, CodeReader oCodeReader) {
+        oCodeReader.setPos(oCodeReader.getPos()+1);
+        oCodeReader.setCode("");
+                
+        readStartBlack(line, oCodeReader);
+        
+        oCodeReader.setPos(oCodeReader.getPos()+1);
+        readStartWhite(line, oCodeReader);
+        
+        int iNewPos = oCodeReader.getPos()+ INITIALBLACKBARS+ INITIALWHITEBARS - 1;
+        oCodeReader.setPos(iNewPos);
+        
+        return !("".equals(oCodeReader.getCode().trim()));
+    }
+
+    private static void readCode(ArrayList<Integer> line, CodeReader oCodeReader) {
+        oCodeReader.setPos(oCodeReader.getPos()+1);
+        oCodeReader.setCode("");
+    }
+
+    private static boolean isEnd(CodeReader oCodeReader) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    private static int getSingleBarSize(ArrayList<Integer> line) {
+        int iResult = 0;
+        
+        int iPixelsAcum = 0;
+        //we delete the first and last lines
+        for(int i = 1; i < line.size()-1; i++){
+            iPixelsAcum += line.get(i);
+        }
+        
+        iResult = iPixelsAcum/(line.size()- SIZEBARS);
+        
+        return iResult;
         
     }
+
+
+    private static void readStartBlack(ArrayList<Integer> line, CodeReader oCodeReader) {
+        
+        ArrayList<Integer> aStartBlackBars = new ArrayList<>();
+            
+        for(int i = 0; i < INITIALBLACKBARS; i++){
+            
+            int iBlackIndex = oCodeReader.getPos() + (i * 2);
+            
+            int iPixelsCuantity = line.get(iBlackIndex);
+            
+            int iPatternElement = getPatternElement(iPixelsCuantity, oCodeReader.getSingleBarSize());            
+            
+            aStartBlackBars.add(iPatternElement);
+        }
+        
+        int iCode = decode(aStartBlackBars);
+        oCodeReader.setCode(oCodeReader.getCode() + getChar(iCode)); 
+        
+    }
+
+    private static void readStartWhite(ArrayList<Integer> line, CodeReader oCodeReader) {
+        ArrayList<Integer> aStartBlackBars = new ArrayList<>();
+            
+        for(int i = 0; i < INITIALWHITEBARS; i++){
+            
+            int iWhiteIndex = oCodeReader.getPos() + (i * 2);
+            
+            int iPixelsCuantity = line.get(iWhiteIndex);
+            
+            int iPatternElement = getPatternElement(iPixelsCuantity, oCodeReader);            
+            
+            aStartBlackBars.add(iPatternElement);
+        }
+        
+        int iCode = decode(aStartBlackBars);
+        oCodeReader.setCode(oCodeReader.getCode() + getChar(iCode)); 
+    }
+
+    private static int getPatternElement(int iPixelsCuantity, int iSingleBarSize) {
+        int iResult = -1;
+        
+        if(iPixelsCuantity <= iSingleBarSize){
+            iResult = 0;
+        }
+        else{
+            iResult = 1;
+        }
+        
+        return iResult;
+    }
+
     
 }
