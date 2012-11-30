@@ -27,11 +27,15 @@ public class CodeBarReading {
     }
     
     private static String readCode(ImagePlus oImagePlus){
+        
+    }
+    
+    private static String readLine(int y, ImagePlus oImagePlus){
         String sResult = ""; 
         int sState = 1; 
         int posX = 0;
-        List linea = groupPixels(oImagePlus);
-        (vacio, codigo, posX) = LeerCodigo(línea,posX);
+        List linea = groupPixels(y, oImagePlus);
+        (vacio, codigo, posX) = LeerInicio(línea,posX);
         
         while(true) {
             switch(sState){
@@ -51,17 +55,13 @@ public class CodeBarReading {
                     else sState = 3;
                     break;
                 case 3:
-                    return salida;
+                    return sResult;
                     break;
                 case 4:
-                    return “”;
+                    return "";
                     break;
             }
         }
-    }
-    
-    private static String readLine(int y, ImagePlus oImagePlus){
-        
     }
     
     
@@ -76,33 +76,18 @@ public class CodeBarReading {
         oImageProcessor.getRow(0,y, aLine, oImageProcessor.getWidth());
         
         int iPixelsCounter = 0;
-        int iPreviousPixelColor = -1;
+        int iPreviousPixelColor = 0;
         
         for(int x = 0; x < oImageProcessor.getWidth(); x++){            
-            if(aLine[x] == 0){
-                if(iPreviousPixelColor == 0)
-                {
+            if(aLine[x] == iPreviousPixelColor){
                     iPixelsCounter++;
-                }
-                else
-                {
-                    oResult.add(iPixelsCounter);
-                    iPreviousPixelColor = 0;
-                    iPixelsCounter = 1;
-                }
-            } 
-            else{
-                if(iPreviousPixelColor == 1)
-                {
-                    iPixelsCounter++;
-                }
-                else
-                {
-                    oResult.add(iPixelsCounter);
-                    iPreviousPixelColor = 1;
-                    iPixelsCounter = 1;                    
-                }
             }
+            else
+            {
+                oResult.add(iPixelsCounter);
+                iPreviousPixelColor = aLine[x];
+                iPixelsCounter = 1;
+            } 
         }
         oResult.add(iPixelsCounter);
         
