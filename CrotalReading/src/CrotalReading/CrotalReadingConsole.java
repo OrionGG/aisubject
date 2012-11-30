@@ -6,7 +6,7 @@ package CrotalReading;
 
 import ij.ImagePlus;
 import ij.io.FileSaver;
-import java.io.File;
+import java.io.*;
 import java.util.ArrayList;
 
 /**
@@ -24,6 +24,7 @@ public class CrotalReadingConsole {
     private static String IMAGEFOLDEREMPTYERROR = "ERROR Image Folder can no be open: ";
     private static String NUMBERTTODETECTCONVERTERROR = "ERROR Argument does not contain a parsable integer: ";
     private static String IMAGENULLERROR = "ERROR No image returned.";
+    
 
     
     /**
@@ -50,30 +51,14 @@ public class CrotalReadingConsole {
                 
                 for (File oFile : aListOfFiles)
                 {
+                    String sAbsolutePath = oFile.getAbsolutePath();
+                    
+                    ImagePlus oImagePlus = CrotalReader.VideoVigilanciaProcess(sAbsolutePath, iNumbersToDetect);
+                    
+
                     String sFileName = oFile.getName();
-                    
-                    ImagePlus oImagePlus = CrotalReader.VideoVigilanciaProcess(sFileName, iNumbersToDetect);
-                    
-                    if(oImagePlus != null){
-                        FileSaver oFileSaver = new FileSaver(oImagePlus);
-                        
-                        String sOutputFolder = "";
-                        
-                        if(OutputFolderIndex < args.length){
-                            sOutputFolder = args[OutputFolderIndex];
-                            if(sOutputFolder == ""){
-                                sOutputFolder = combine(sImageFolder, OutputDefaultFolder);
-                            }
-                        }
-                        else{
-                            sOutputFolder = combine(sImageFolder, OutputDefaultFolder);
-                        }                        
-                        
-                        oFileSaver.saveAsTiff(combine(sOutputFolder,sFileName));
-                    }
-                    else{
-                        throw new java.io.IOException(IMAGENULLERROR);
-                    }
+                    saveImagePlus(args, sImageFolder, sFileName, oImagePlus);
+
                 }
                 
             }
@@ -109,6 +94,37 @@ public class CrotalReadingConsole {
         File file1 = new File(path1);
         File file2 = new File(file1, path2);
         return file2.getPath();
+    }
+
+    private static void saveImagePlus(String[] args,  String sImageFolder, String sFileName, ImagePlus oImagePlus)  throws java.io.IOException{
+        if(oImagePlus != null){
+
+            String sOutputFolder = "";
+
+            if(OutputFolderIndex < args.length){
+                sOutputFolder = args[OutputFolderIndex];
+                if(sOutputFolder == ""){
+                    sOutputFolder = combine(sImageFolder, OutputDefaultFolder);
+                }
+            }
+            else{
+                sOutputFolder = combine(sImageFolder, OutputDefaultFolder);
+            }      
+            
+            File oOutputFolder = new File(sOutputFolder);
+            
+            if(!oOutputFolder.exists()){
+                oOutputFolder.mkdir();            
+            }
+            
+            String sOutputFile = combine(sOutputFolder,sFileName);           
+            
+            FileSaver oFileSaver = new FileSaver(oImagePlus);
+            oFileSaver.saveAsTiff(sOutputFile);
+        }
+        else{
+            System.out.println(IMAGENULLERROR + ": " + combine(sImageFolder, sFileName));
+        }
     }
     
 }

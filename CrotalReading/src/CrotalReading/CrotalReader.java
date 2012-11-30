@@ -160,6 +160,11 @@ public class CrotalReader {
                 
                 img = prepareImageForGetNumbers(sImagePath, dAngle, iInitialThreshold);
                 
+                if(img == null)
+                {
+                    return img;
+                }
+                
                 nParticles = getParticles(img, dMinSize);
 
                 iMaxParticles = (nParticles>iMaxParticles)?nParticles:iMaxParticles;
@@ -179,6 +184,11 @@ public class CrotalReader {
     private static ImagePlus prepareImageForGetNumbers(String sImagePath, double dAngle, int iInitialThreshold) {
         Opener opener = new Opener(); 
         ImagePlus img = opener.openImage(sImagePath);
+        
+        if(img == null)
+        {
+            return img;
+        }
 
         ImageProcessor  oImageProcessor = img.getProcessor();
         oImageProcessor.threshold(iInitialThreshold);
