@@ -20,6 +20,9 @@ public class CodeBarReading {
     private static final int INITIALBLACKBARS = 2;
     private static final int INITIALWHITEBARS = 2;
     
+    private static final int BLACKBARSFORELEMENT = 5;
+    private static final int WHITEBARSFORELEMENT = 5;
+    
     private static final int ENDBLACKBARS = 2;
     private static final int ENDWHITEBARS = 2;
 
@@ -155,24 +158,31 @@ public class CodeBarReading {
         return cResult;
     }
 
-    private static boolean readStart(ArrayList<Integer> line, CodeReader oCodeReader) {
+    private static void readStart(ArrayList<Integer> line, CodeReader oCodeReader) {
         oCodeReader.setPos(oCodeReader.getPos()+1);
         oCodeReader.setCode("");
                 
-        readStartBlack(line, oCodeReader);
+        readBlackBars(line, oCodeReader, INITIALBLACKBARS);
         
         oCodeReader.setPos(oCodeReader.getPos()+1);
-        readStartWhite(line, oCodeReader);
+        readWhiteBars(line, oCodeReader, INITIALWHITEBARS);
         
         int iNewPos = oCodeReader.getPos()+ INITIALBLACKBARS+ INITIALWHITEBARS - 1;
         oCodeReader.setPos(iNewPos);
         
-        return !("".equals(oCodeReader.getCode().trim()));
     }
 
     private static void readCode(ArrayList<Integer> line, CodeReader oCodeReader) {
         oCodeReader.setPos(oCodeReader.getPos()+1);
         oCodeReader.setCode("");
+        
+        readBlackBars(line, oCodeReader, BLACKBARSFORELEMENT);
+        
+        oCodeReader.setPos(oCodeReader.getPos()+1);
+        readWhiteBars(line, oCodeReader, WHITEBARSFORELEMENT);
+        
+        int iNewPos = oCodeReader.getPos()+ BLACKBARSFORELEMENT + WHITEBARSFORELEMENT - 1;
+        oCodeReader.setPos(iNewPos);
     }
 
     private static boolean isEnd(CodeReader oCodeReader) {
@@ -195,11 +205,11 @@ public class CodeBarReading {
     }
 
 
-    private static void readStartBlack(ArrayList<Integer> line, CodeReader oCodeReader) {
+    private static void readBlackBars(ArrayList<Integer> line, CodeReader oCodeReader, int iBarsToRead) {
         
         ArrayList<Integer> aStartBlackBars = new ArrayList<>();
             
-        for(int i = 0; i < INITIALBLACKBARS; i++){
+        for(int i = 0; i < iBarsToRead; i++){
             
             int iBlackIndex = oCodeReader.getPos() + (i * 2);
             
@@ -215,16 +225,16 @@ public class CodeBarReading {
         
     }
 
-    private static void readStartWhite(ArrayList<Integer> line, CodeReader oCodeReader) {
+    private static void readWhiteBars(ArrayList<Integer> line, CodeReader oCodeReader, int iBarsToRead) {
         ArrayList<Integer> aStartBlackBars = new ArrayList<>();
             
-        for(int i = 0; i < INITIALWHITEBARS; i++){
+        for(int i = 0; i < iBarsToRead; i++){
             
             int iWhiteIndex = oCodeReader.getPos() + (i * 2);
             
             int iPixelsCuantity = line.get(iWhiteIndex);
             
-            int iPatternElement = getPatternElement(iPixelsCuantity, oCodeReader);            
+            int iPatternElement = getPatternElement(iPixelsCuantity, oCodeReader.getSingleBarSize());            
             
             aStartBlackBars.add(iPatternElement);
         }
