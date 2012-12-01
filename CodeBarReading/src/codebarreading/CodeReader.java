@@ -43,7 +43,7 @@ public class CodeReader {
     
     
     public boolean isEmpty(){
-        return "".equals(sCode);
+        return (sCode.trim().length() < 2);
     }
 
     /**
