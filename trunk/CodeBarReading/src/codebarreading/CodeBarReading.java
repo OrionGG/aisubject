@@ -4,8 +4,12 @@
  */
 package codebarreading;
 
+import ij.IJ;
 import ij.ImagePlus;
+import ij.io.FileSaver;
+import ij.io.Opener;
 import ij.process.ImageProcessor;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +19,15 @@ import java.util.List;
  * @author Orion
  */
 public class CodeBarReading {
+    
+    private static int MinimumArgumentNumber = 1;
+    private static int ImageFolderIndex = 0;
+    private static int OutputFolderIndex = 1;    
+    
+    private static String OutputDefaultFolder = "Output";
+    
+    private static String IMAGEFOLDEREMPTYERROR = "ERROR Image Folder can no be open: ";
+    private static String IMAGENULLERROR = "ERROR No image returned.";
     
     private static final int SIZEBARS = 2;
     private static final int INITIALBLACKBARS = 2;
@@ -29,22 +42,69 @@ public class CodeBarReading {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws java.io.IOException{
         // TODO code application logic here
-        
+        if(MinimumArgumentNumber <= args.length){
+            String sImageFolder = args[ImageFolderIndex];
+            
+            if(sImageFolder != ""){                  
+                
+                ArrayList<File> aListOfFiles = getFiles(sImageFolder);
+                
+                for (File oFile : aListOfFiles)
+                {
+                    String sAbsolutePath = oFile.getAbsolutePath();
+                    
+                    ImagePlus oImagePlus = openImage(sAbsolutePath);
+
+                    
+                    String sResult = readFullCode(oImagePlus);
+
+                    String sFileName = oFile.getName();
+                    saveImagePlus(args, sImageFolder, sFileName, oImagePlus);
+
+                }
+                
+            }
+            else{
+                throw new java.io.IOException(IMAGEFOLDEREMPTYERROR + sImageFolder);
+            }
+            
+        }
         
         
     }
     
     private static String readFullCode(ImagePlus oImagePlus){
         
+        ImageProcessor oImageProcessor = oImagePlus.getProcessor(); 
+        
+        
+        ArrayList<String> aFullCodeLine = new ArrayList<>();
+        
+        //gets the height of the image and iterate
+        int y = oImageProcessor.getHeight();
+        
+        for(int i = 0; i < y; i++){
+            String sLine = readLine(i,oImagePlus);
+            aFullCodeLine.add(sLine);
+        }
+        
+        //TODO temporally
+        return aFullCodeLine.get(0);
     }
     
     private static String readLine(int y, ImagePlus oImagePlus){
         String sResult = ""; 
         int sState = 1; 
         int posX = 0;
+        
         ArrayList<Integer> line = groupPixels(y, oImagePlus);
+        
+        if(line.size() < (INITIALBLACKBARS+INITIALWHITEBARS+ENDBLACKBARS)){
+            return "";
+        }
+        
         CodeReader oCodeReader = new CodeReader();
         oCodeReader.setCode("");
         oCodeReader.setPos(posX);
@@ -76,6 +136,8 @@ public class CodeBarReading {
                     break;
                 case 4:
                     return "";
+                default:
+                    break;
             }
         }
     }
@@ -86,9 +148,14 @@ public class CodeBarReading {
         ArrayList <Integer> oResult = new ArrayList <>();
         
         ImageProcessor oImageProcessor = oImagePlus.getProcessor(); 
+
+        IJ.run(oImagePlus, "Convert to Mask", "");
+        IJ.run(oImagePlus, "Make Binary", "");
+
         
         //gets all pixels of the image
         int[] aLine = new int[oImageProcessor.getWidth()];
+
         oImageProcessor.getRow(0,y, aLine, oImageProcessor.getWidth());
         
         int iPixelsCounter = 0;
@@ -116,7 +183,7 @@ public class CodeBarReading {
         
         for(int i = 0; i < aPattern.size(); i++)
         {            
-            int iPatternElement = aPattern.get(i);            
+            int iPatternElement = aPattern.get(aPattern.size() - i - 1 );            
             iResult = iResult + (int)(Math.pow(2, i)* iPatternElement);
         }
         
@@ -167,26 +234,39 @@ public class CodeBarReading {
         oCodeReader.setPos(oCodeReader.getPos()+1);
         readWhiteBars(line, oCodeReader, INITIALWHITEBARS);
         
-        int iNewPos = oCodeReader.getPos()+ INITIALBLACKBARS+ INITIALWHITEBARS - 1;
+        int iNewPos = oCodeReader.getPos()+ INITIALBLACKBARS+ INITIALWHITEBARS-1;
         oCodeReader.setPos(iNewPos);
         
     }
 
     private static void readCode(ArrayList<Integer> line, CodeReader oCodeReader) {
-        oCodeReader.setPos(oCodeReader.getPos()+1);
         oCodeReader.setCode("");
         
-        readBlackBars(line, oCodeReader, BLACKBARSFORELEMENT);
+        if((oCodeReader.getPos() + ((ENDBLACKBARS - 1) * 2) +  ((ENDWHITEBARS - 1) * 2) ) == line.size()){
+            //we are in he before last position => we are in the end of the codebar
+            readBlackBars(line, oCodeReader, ENDBLACKBARS);
+            int iNewPos = oCodeReader.getPos()+ ((ENDBLACKBARS - 1) * 2);
+            oCodeReader.setPos(iNewPos);
+        }
+        else{
+            readBlackBars(line, oCodeReader, BLACKBARSFORELEMENT);
         
-        oCodeReader.setPos(oCodeReader.getPos()+1);
-        readWhiteBars(line, oCodeReader, WHITEBARSFORELEMENT);
+            oCodeReader.setPos(oCodeReader.getPos()+1);
+            readWhiteBars(line, oCodeReader, WHITEBARSFORELEMENT);
+
+            int iNewPos = oCodeReader.getPos()+ BLACKBARSFORELEMENT + WHITEBARSFORELEMENT-1;
+            oCodeReader.setPos(iNewPos);
+        }
         
-        int iNewPos = oCodeReader.getPos()+ BLACKBARSFORELEMENT + WHITEBARSFORELEMENT - 1;
-        oCodeReader.setPos(iNewPos);
+
     }
 
     private static boolean isEnd(CodeReader oCodeReader) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        boolean bResult = false;
+        
+        bResult = "E".equals(oCodeReader.getCode());
+        
+        return bResult;
     }
 
     private static int getSingleBarSize(ArrayList<Integer> line) {
@@ -207,7 +287,7 @@ public class CodeBarReading {
 
     private static void readBlackBars(ArrayList<Integer> line, CodeReader oCodeReader, int iBarsToRead) {
         
-        ArrayList<Integer> aStartBlackBars = new ArrayList<>();
+        ArrayList<Integer> aBlackBars = new ArrayList<>();
             
         for(int i = 0; i < iBarsToRead; i++){
             
@@ -217,16 +297,16 @@ public class CodeBarReading {
             
             int iPatternElement = getPatternElement(iPixelsCuantity, oCodeReader.getSingleBarSize());            
             
-            aStartBlackBars.add(iPatternElement);
+            aBlackBars.add(iPatternElement);
         }
         
-        int iCode = decode(aStartBlackBars);
+        int iCode = decode(aBlackBars);
         oCodeReader.setCode(oCodeReader.getCode() + getChar(iCode)); 
         
     }
 
     private static void readWhiteBars(ArrayList<Integer> line, CodeReader oCodeReader, int iBarsToRead) {
-        ArrayList<Integer> aStartBlackBars = new ArrayList<>();
+        ArrayList<Integer> aWhiteBars = new ArrayList<>();
             
         for(int i = 0; i < iBarsToRead; i++){
             
@@ -236,10 +316,10 @@ public class CodeBarReading {
             
             int iPatternElement = getPatternElement(iPixelsCuantity, oCodeReader.getSingleBarSize());            
             
-            aStartBlackBars.add(iPatternElement);
+            aWhiteBars.add(iPatternElement);
         }
         
-        int iCode = decode(aStartBlackBars);
+        int iCode = decode(aWhiteBars);
         oCodeReader.setCode(oCodeReader.getCode() + getChar(iCode)); 
     }
 
@@ -256,5 +336,73 @@ public class CodeBarReading {
         return iResult;
     }
 
+    public static ArrayList<File> getFiles(String sImageFolder) 
+    {
+        ArrayList<File> aFilesResult = new ArrayList<>();
+        
+        File folder = new File(sImageFolder);
+        File[] listOfFiles = folder.listFiles(); 
+
+        for (int i = 0; i < listOfFiles.length; i++) 
+        {
+          if (listOfFiles[i].isFile()) 
+          {
+              aFilesResult.add(listOfFiles[i]);
+          }
+        }
+        
+        return aFilesResult;
+    }
     
+    public static String combine (String path1, String path2)
+    {
+        File file1 = new File(path1);
+        File file2 = new File(file1, path2);
+        return file2.getPath();
+    }
+
+    private static void saveImagePlus(String[] args,  String sImageFolder, String sFileName, ImagePlus oImagePlus)  throws java.io.IOException{
+        if(oImagePlus != null){
+
+            String sOutputFolder = "";
+
+            if(OutputFolderIndex < args.length){
+                sOutputFolder = args[OutputFolderIndex];
+                if(sOutputFolder == ""){
+                    sOutputFolder = combine(sImageFolder, OutputDefaultFolder);
+                }
+            }
+            else{
+                sOutputFolder = combine(sImageFolder, OutputDefaultFolder);
+            }      
+            
+            File oOutputFolder = new File(sOutputFolder);
+            
+            if(!oOutputFolder.exists()){
+                oOutputFolder.mkdir();            
+            }
+            
+            String sOutputFile = combine(sOutputFolder,sFileName);           
+            
+            FileSaver oFileSaver = new FileSaver(oImagePlus);
+            oFileSaver.saveAsTiff(sOutputFile);
+        }
+        else{
+            System.out.println(IMAGENULLERROR + ": " + combine(sImageFolder, sFileName));
+        }
+    }
+    
+    private static ImagePlus openImage(String sImagePath) {
+        Opener opener = new Opener(); 
+        ImagePlus oImagePlus = null;
+        try{
+            oImagePlus = opener.openImage(sImagePath);
+        }
+        catch(Exception e){
+            
+            int a = 0;
+        }
+        
+        return oImagePlus;
+    }
 }
