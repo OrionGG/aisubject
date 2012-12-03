@@ -163,7 +163,7 @@ public class CrotalReader {
             while(nParticles < MAXPARTICLESNUMBER && iInitialThreshold < MAXTHRESHOLD ){
                 
                 
-                img = prepareImageForGetNumbers(sImagePath, dAngle, iInitialThreshold);
+                img = prepareImageForGetNumbers(sImagePath, iInitialThreshold);
                 
                 if(img == null)
                 {
@@ -192,10 +192,13 @@ public class CrotalReader {
         
         System.out.println("Elapsed Time: " + estimatedTime);
         
+        //skew image
+        oFinalImageProcessor.rotate(dAngle);
+        
         return img;
     }
 
-    private static ImagePlus prepareImageForGetNumbers(String sImagePath, double dAngle, int iInitialThreshold) {
+    private static ImagePlus prepareImageForGetNumbers(String sImagePath, int iInitialThreshold) {
         Opener opener = new Opener(); 
         ImagePlus img = opener.openImage(sImagePath);
         
@@ -215,7 +218,6 @@ public class CrotalReader {
         oImageProcessor.erode();
         oImageProcessor.erode();
 
-        oImageProcessor.rotate(dAngle);
         
         return img;
     }
