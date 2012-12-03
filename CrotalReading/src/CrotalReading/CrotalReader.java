@@ -56,7 +56,7 @@ public class CrotalReader {
         Point oLowerPoint = new Point();
         boolean bLowerPointFound = false;
         //look for the lower pixel
-        for(int y = oImageProcessor.getHeight() -1; y >= 0; y--){
+        for(int y = oImageProcessor.getHeight() - 2; y >= 0; y--){
             for(int x = 0; x < oImageProcessor.getWidth(); x++){
                 if(aPixels[x][y] != 0){
                     oLowerPoint.x = x;
@@ -100,7 +100,7 @@ public class CrotalReader {
     public static int GetValueLastInitialPoint(ImageProcessor oImageProcessor,Point oLowerPoint,Point oLineInitialHorPoint,  int[][] aPixels){
         int iValueLastInitialPoint = 0;
         
-        for(int y = oImageProcessor.getHeight() -1; y >= 0; y--){
+        for(int y = oImageProcessor.getHeight() - 2; y >= 0; y--){
 
             if(aPixels[oLineInitialHorPoint.x][y] != 0){
                 iValueLastInitialPoint= y+1;
@@ -145,18 +145,23 @@ public class CrotalReader {
     }
 
     private static ImagePlus getNumberImage(String sImagePath, double dAngle) {
+        System.out.println("ImagePath: " + sImagePath);
+        
+        long startTime = System.currentTimeMillis();
+
         ImagePlus img = null;
         
         double dMinSize = MAXDENSITYNUMBER;
         int nParticles = 0;
+        int iLastThreshold = 0;
+        double dLastDigitSize = 0;
         
         while(nParticles < MAXPARTICLESNUMBER &&  MINDENSITYNUMBER < dMinSize){            
             int iMaxParticles = 0;
-            System.out.println("dMinSize: " + dMinSize);
             
             int iInitialThreshold = INITIALTHRESHOLD;
             while(nParticles < MAXPARTICLESNUMBER && iInitialThreshold < MAXTHRESHOLD ){
-                System.out.println("Threshold: " + iInitialThreshold);
+                
                 
                 img = prepareImageForGetNumbers(sImagePath, dAngle, iInitialThreshold);
                 
@@ -169,14 +174,23 @@ public class CrotalReader {
 
                 iMaxParticles = (nParticles>iMaxParticles)?nParticles:iMaxParticles;
                 
+                iLastThreshold = iInitialThreshold;
                 iInitialThreshold = iInitialThreshold + ((2 * MAXPARTICLESNUMBER) + 1  - (2 * nParticles));
                                 
             }
+            dLastDigitSize = dMinSize;
             dMinSize = dMinSize - ((100 * MAXPARTICLESNUMBER)/(iMaxParticles+1));
         }
         
         ImageProcessor  oFinalImageProcessor = img.getProcessor();
         dilateDigits(oFinalImageProcessor);
+        
+        long estimatedTime = System.currentTimeMillis() - startTime;
+        
+        System.out.println("Threshold: " + iLastThreshold);
+        System.out.println("Digit Size: " + dLastDigitSize);
+        
+        System.out.println("Elapsed Time: " + estimatedTime);
         
         return img;
     }
@@ -246,9 +260,6 @@ public class CrotalReader {
     private static ImageProcessor prepareImageForRotation(ImagePlus img) {
         ImageProcessor  oImageProcessor = img.getProcessor();        
         oImageProcessor.autoThreshold();
-        
-        IJ.run(img, "Convert to Mask", "");
-        IJ.run(img, "Make Binary", "");
 
         //remove lower line
         oImageProcessor.erode();
