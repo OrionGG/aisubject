@@ -77,7 +77,7 @@ public class CrotalReader {
         Point oLineInitialHorPoint = new Point();
         
         //Get initial or last point in the horizontal line
-        if( oImageProcessor.getWidth() - oLowerPoint.x < oLowerPoint.x){
+        if( (int)(oImageProcessor.getWidth()*0.5) < oLowerPoint.x){
             oLineInitialHorPoint.x = oLowerPoint.x - (int)(oImageProcessor.getWidth()*0.5);
         }
         else{
