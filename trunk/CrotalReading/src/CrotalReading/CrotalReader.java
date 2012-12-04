@@ -30,10 +30,11 @@ public class CrotalReader {
     public static final int INITIALTHRESHOLD = 40;
     public static final int MAXTHRESHOLD = 80;
     
-    private static final double MAXDENSITYNUMBER = 2500.0;
+    private static final double MAXDENSITYNUMBER = 4000.0;
+    private static final double INITIALENSITYNUMBER = 2500.0;
     private static final double MINDENSITYNUMBER = 500.0;
     
-    private static int MAXPARTICLESNUMBER = 4;
+    private static int MINPARTICLESNUMBER = 4;
     
 
     /**
@@ -43,7 +44,7 @@ public class CrotalReader {
         //get the angle to rotate the image
         Double dAngle = getRotationAngle(sImagePath);
         
-        MAXPARTICLESNUMBER = iNumbersToSearch;
+        MINPARTICLESNUMBER = iNumbersToSearch;
         
         //get the image with the numbers to read
         ImagePlus img = getNumberImage(sImagePath, dAngle);
@@ -151,17 +152,16 @@ public class CrotalReader {
 
         ImagePlus img = null;
         
-        double dMinSize = MAXDENSITYNUMBER;
+        double dMinSize = INITIALENSITYNUMBER;
         int nParticles = 0;
         int iLastThreshold = 0;
         double dLastDigitSize = 0;
         
-        while(nParticles < MAXPARTICLESNUMBER &&  MINDENSITYNUMBER < dMinSize){            
+        while(nParticles < MINPARTICLESNUMBER &&  MINDENSITYNUMBER < dMinSize){            
             int iMaxParticles = 0;
             
             int iInitialThreshold = INITIALTHRESHOLD;
-            while(nParticles < MAXPARTICLESNUMBER && iInitialThreshold < MAXTHRESHOLD ){
-                
+            while(nParticles < MINPARTICLESNUMBER && iInitialThreshold < MAXTHRESHOLD ){
                 
                 img = prepareImageForGetNumbers(sImagePath, iInitialThreshold);
                 
@@ -175,11 +175,11 @@ public class CrotalReader {
                 iMaxParticles = (nParticles>iMaxParticles)?nParticles:iMaxParticles;
                 
                 iLastThreshold = iInitialThreshold;
-                iInitialThreshold = iInitialThreshold + ((2 * MAXPARTICLESNUMBER) + 1  - (2 * nParticles));
+                iInitialThreshold = iInitialThreshold + ((2 * MINPARTICLESNUMBER) + 1  - (2 * (nParticles)));
                                 
             }
             dLastDigitSize = dMinSize;
-            dMinSize = dMinSize - ((100 * MAXPARTICLESNUMBER)/(iMaxParticles+1));
+            dMinSize = dMinSize - ((100 * MINPARTICLESNUMBER)/(iMaxParticles+1));
         }
         
         ImageProcessor  oFinalImageProcessor = img.getProcessor();
@@ -249,7 +249,7 @@ public class CrotalReader {
         ParticleAnalyzer oParticleAnalyzer = new ParticleAnalyzer(
                 ParticleAnalyzer.SHOW_MASKS+ParticleAnalyzer.EXCLUDE_EDGE_PARTICLES+ParticleAnalyzer.IN_SITU_SHOW , 
                 iMeasurementsValue,
-                oResultsTable,dMinSize,4000.0);
+                oResultsTable,dMinSize,MAXDENSITYNUMBER);
         oParticleAnalyzer.setHideOutputImage(true);
         oResultsTable.disableRowLabels();        
 
