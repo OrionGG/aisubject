@@ -36,6 +36,8 @@ public class CrotalReader {
     
     private static int MINPARTICLESNUMBER = 4;
     
+    private static int iTotalTime = 0;
+    
 
     /**
      * @param args the command line arguments
@@ -45,6 +47,8 @@ public class CrotalReader {
         Double dAngle = getRotationAngle(sImagePath);
         
         MINPARTICLESNUMBER = iNumbersToSearch;
+        
+        System.out.println("TotalTime: " + iTotalTime);
         
         //get the image with the numbers to read
         ImagePlus img = getNumberImage(sImagePath, dAngle);
@@ -152,16 +156,19 @@ public class CrotalReader {
 
         ImagePlus img = null;
         
-        double dMinSize = INITIALENSITYNUMBER;
+        
         int nParticles = 0;
         int iLastThreshold = 0;
         double dLastDigitSize = 0;
         
-        while(nParticles < MINPARTICLESNUMBER &&  MINDENSITYNUMBER < dMinSize){            
+        int iInitialThreshold = INITIALTHRESHOLD;
+        
+        while(nParticles < MINPARTICLESNUMBER && iInitialThreshold < MAXTHRESHOLD ){           
             int iMaxParticles = 0;
             
-            int iInitialThreshold = INITIALTHRESHOLD;
-            while(nParticles < MINPARTICLESNUMBER && iInitialThreshold < MAXTHRESHOLD ){
+            double dMinSize = INITIALENSITYNUMBER;
+            
+            while(nParticles < MINPARTICLESNUMBER &&  MINDENSITYNUMBER < dMinSize){ 
                 
                 img = prepareImageForGetNumbers(sImagePath, iInitialThreshold);
                 
@@ -174,12 +181,14 @@ public class CrotalReader {
 
                 iMaxParticles = (nParticles>iMaxParticles)?nParticles:iMaxParticles;
                 
-                iLastThreshold = iInitialThreshold;
-                iInitialThreshold = iInitialThreshold + ((2 * MINPARTICLESNUMBER) + 1  - (2 * (nParticles)));
-                                
+                
+                dLastDigitSize = dMinSize;
+                dMinSize = dMinSize - ((200 * MINPARTICLESNUMBER)/(nParticles+1));
             }
-            dLastDigitSize = dMinSize;
-            dMinSize = dMinSize - ((200 * MINPARTICLESNUMBER)/(iMaxParticles+1));
+            
+            iLastThreshold = iInitialThreshold;
+            iInitialThreshold = iInitialThreshold + ((2 * MINPARTICLESNUMBER) + 1  - (2 * (iMaxParticles +1 )));
+                
         }
         
         ImageProcessor  oFinalImageProcessor = img.getProcessor();
@@ -191,6 +200,7 @@ public class CrotalReader {
         System.out.println("Digit Size: " + dLastDigitSize);
         
         System.out.println("Elapsed Time: " + estimatedTime);
+        iTotalTime += estimatedTime; 
         
         //skew image
         oFinalImageProcessor.rotate(dAngle);
