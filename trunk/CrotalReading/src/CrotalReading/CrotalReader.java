@@ -179,7 +179,7 @@ public class CrotalReader {
                                 
             }
             dLastDigitSize = dMinSize;
-            dMinSize = dMinSize - ((100 * MINPARTICLESNUMBER)/(iMaxParticles+1));
+            dMinSize = dMinSize - ((200 * MINPARTICLESNUMBER)/(iMaxParticles+1));
         }
         
         ImageProcessor  oFinalImageProcessor = img.getProcessor();
