@@ -187,7 +187,7 @@ public class CrotalReader {
             }
             
             iLastThreshold = iInitialThreshold;
-            iInitialThreshold = iInitialThreshold + ((2 * MINPARTICLESNUMBER) + 1  - (2 * (iMaxParticles +1 )));
+            iInitialThreshold = iInitialThreshold + ((2 * MINPARTICLESNUMBER) + 1  - (2 * (iMaxParticles)));
                 
         }
         
