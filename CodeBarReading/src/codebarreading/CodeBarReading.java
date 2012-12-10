@@ -8,10 +8,13 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.io.FileSaver;
 import ij.io.Opener;
+import ij.process.BinaryProcessor;
 import ij.process.ImageProcessor;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
 
 
 /**
@@ -39,6 +42,7 @@ public class CodeBarReading {
     private static final int ENDBLACKBARS = 2;
     private static final int ENDWHITEBARS = 2;
 
+    private static final double MINRELIABILITY = 5;
     /**
      * @param args the command line arguments
      */
@@ -57,11 +61,44 @@ public class CodeBarReading {
                     
                     ImagePlus oImagePlus = openImage(sAbsolutePath);
 
+                    System.out.println("File name: " + oImagePlus.getTitle());
                     
-                    String sResult = readFullCode(oImagePlus);
+                    CodeBarResult oCodeBarResult = readFullCode(oImagePlus);
+                    
+                    if((oCodeBarResult.getCodeBar() == "")|| oCodeBarResult.getReliability() < MINRELIABILITY){
+                        
+                        
+                        int[] kernel = {0, 1, 0,
+                                        0, 1, 0,
+                                        0, 1, 0};
+                        
+                        ImageProcessor oImageProcessor = oImagePlus.getProcessor();                        
+                        oImageProcessor.convolve3x3(kernel);
+                        oImageProcessor.threshold(1);
+                        
+                        oCodeBarResult = readFullCode(oImagePlus);
+                        
+                        if(oCodeBarResult.getCodeBar() == ""|| oCodeBarResult.getReliability() < MINRELIABILITY){                 
 
+                            float[] kernel2 = { 0, 0, 1, 0, 0,
+                                                0, 0, 1, 0, 0,
+                                                0, 0, 1, 0, 0,
+                                                0, 0, 1, 0, 0,
+                                                0, 0, 1, 0, 0,};
+                            oImageProcessor.convolve(kernel2, 5, 5);
+                            oImageProcessor.threshold(1);
+
+                            oCodeBarResult = readFullCode(oImagePlus);
+                        }
+                    }                  
+                    
+                    
                     String sFileName = oFile.getName();
                     saveImagePlus(args, sImageFolder, sFileName, oImagePlus);
+                        
+                    System.out.println("FinalCode: " + oCodeBarResult.getCodeBar());
+                    System.out.println("Lines: " + oCodeBarResult.getLines());
+                    System.out.println("Reliability(%): " + oCodeBarResult.getReliability());
 
                 }
                 
@@ -75,23 +112,48 @@ public class CodeBarReading {
         
     }
     
-    private static String readFullCode(ImagePlus oImagePlus){
+    private static CodeBarResult readFullCode(ImagePlus oImagePlus){
+        
         
         ImageProcessor oImageProcessor = oImagePlus.getProcessor(); 
         
         
-        ArrayList<String> aFullCodeLine = new ArrayList<>();
+        HashMap<String, Integer> mFullCodeLineCounter = new HashMap<>();
         
         //gets the height of the image and iterate
         int y = oImageProcessor.getHeight();
         
+        String sFinalCode = "";
+        
         for(int i = 0; i < y; i++){
             String sLine = readLine(i,oImagePlus);
-            aFullCodeLine.add(sLine);
+            
+            int iCount = 0;
+            if(mFullCodeLineCounter.containsKey(sLine)){
+                iCount = mFullCodeLineCounter.get(sLine);   
+            }
+            
+            iCount++;
+            mFullCodeLineCounter.put(sLine, iCount);
+            
+            double dReliability = ((double)iCount/y) * 100;
+            if(sLine!= "" && dReliability >= MINRELIABILITY){
+                sFinalCode = sLine;
+                break;
+            }
         }
         
-        //TODO temporally
-        return aFullCodeLine.get(0);
+        
+//        String sFinalCode = getMostReadCode(mFullCodeLineCounter);
+        
+        int iCount =  mFullCodeLineCounter.get(sFinalCode);
+                
+        CodeBarResult oCodeBarResult = new CodeBarResult();
+        oCodeBarResult.setCodeBar(sFinalCode);
+        oCodeBarResult.setLines(iCount);
+        oCodeBarResult.setReliability(((double)iCount/y) * 100);
+        
+        return oCodeBarResult;
     }
     
     private static String readLine(int y, ImagePlus oImagePlus){
@@ -247,6 +309,9 @@ public class CodeBarReading {
             readBlackBars(line, oCodeReader, ENDBLACKBARS);
             int iNewPos = oCodeReader.getPos()+ ((ENDBLACKBARS - 1) * 2);
             oCodeReader.setPos(iNewPos);
+        }
+        else if((oCodeReader.getPos() + (BLACKBARSFORELEMENT - 1) +  WHITEBARSFORELEMENT ) >= line.size()){
+            return;
         }
         else{
             readBlackBars(line, oCodeReader, BLACKBARSFORELEMENT);
@@ -404,5 +469,30 @@ public class CodeBarReading {
         }
         
         return oImagePlus;
+    }
+
+    private static String getMostReadCode(HashMap<String, Integer> mFullCodeLineCounter) {
+        String sResult = "";     
+        
+        
+        TreeMap<Integer, String> mFullCodeLineShorted = new TreeMap<>();        
+
+        for(Map.Entry<String, Integer> oEntry : mFullCodeLineCounter.entrySet()){
+            String sLine = oEntry.getKey();
+            int iCount = oEntry.getValue();
+
+            if(sLine != ""){                    
+                mFullCodeLineShorted.put(iCount, sLine);
+            }
+
+        }
+
+        if(!mFullCodeLineShorted.isEmpty()){
+            sResult = mFullCodeLineShorted.lastEntry().getValue();
+        }
+        
+        return sResult;
+        
+        
     }
 }
