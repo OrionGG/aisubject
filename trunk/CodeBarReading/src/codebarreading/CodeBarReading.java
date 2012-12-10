@@ -14,6 +14,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 
 
@@ -111,42 +112,60 @@ public class CodeBarReading {
         
         
     }
-    
+
     private static CodeBarResult readFullCode(ImagePlus oImagePlus){
-        
-        
+
         ImageProcessor oImageProcessor = oImagePlus.getProcessor(); 
-        
-        
-        HashMap<String, Integer> mFullCodeLineCounter = new HashMap<>();
-        
+
         //gets the height of the image and iterate
-        int y = oImageProcessor.getHeight();
+        int y = oImageProcessor.getHeight();   
         
-        String sFinalCode = "";
+        int y2 = y/2;
+
+        ImageThread tIT1 = new ImageThread(0, y2, oImagePlus);
+        ImageThread tIT2 = new ImageThread(y2, y, oImagePlus);
         
-        for(int i = 0; i < y; i++){
-            String sLine = readLine(i,oImagePlus);
+        tIT1.start();
+        tIT2.start();
+        
             
-            int iCount = 0;
-            if(mFullCodeLineCounter.containsKey(sLine)){
-                iCount = mFullCodeLineCounter.get(sLine);   
+        while(tIT1.isAlive() || tIT2.isAlive()){
+            try{
+                tIT1.join();
+                tIT2.join();
             }
-            
-            iCount++;
-            mFullCodeLineCounter.put(sLine, iCount);
-            
-            double dReliability = ((double)iCount/y) * 100;
-            if(sLine!= "" && dReliability >= MINRELIABILITY){
-                sFinalCode = sLine;
-                break;
+            catch(Exception e){
+                 System.out.println("b");
             }
         }
         
+        HashMap<String, Integer> mFinalFullCodeLineCounter = new HashMap<>();
         
-//        String sFinalCode = getMostReadCode(mFullCodeLineCounter);
+        for(Entry<String, Integer> oEntry : tIT1.mFullCodeLineCounter.entrySet()){
+            String sKey = oEntry.getKey();
+            int iValue = oEntry.getValue();  
+            if(tIT2.mFullCodeLineCounter.containsKey(sKey)){
+                mFinalFullCodeLineCounter.put(sKey, iValue + tIT2.mFullCodeLineCounter.get(sKey) );
+            }
+            else{
+                mFinalFullCodeLineCounter.put(sKey, iValue);
+            }
+            
+        }
         
-        int iCount =  mFullCodeLineCounter.get(sFinalCode);
+        for(Entry<String, Integer> oEntry : tIT2.mFullCodeLineCounter.entrySet()){
+            String sKey = oEntry.getKey();
+            int iValue = oEntry.getValue();  
+            if(! mFinalFullCodeLineCounter.containsKey(sKey)){
+                mFinalFullCodeLineCounter.put(sKey, iValue);
+            }
+            
+        }
+        
+        
+        String sFinalCode = getMostReadCode(mFinalFullCodeLineCounter);
+        
+        int iCount =  mFinalFullCodeLineCounter.get(sFinalCode);
                 
         CodeBarResult oCodeBarResult = new CodeBarResult();
         oCodeBarResult.setCodeBar(sFinalCode);
@@ -154,9 +173,54 @@ public class CodeBarReading {
         oCodeBarResult.setReliability(((double)iCount/y) * 100);
         
         return oCodeBarResult;
+
     }
+
+//    private static CodeBarResult readFullCode(ImagePlus oImagePlus){
+//        
+//        
+//        ImageProcessor oImageProcessor = oImagePlus.getProcessor(); 
+//        
+//        
+//        HashMap<String, Integer> mFullCodeLineCounter = new HashMap<>();
+//        
+//        //gets the height of the image and iterate
+//        int y = oImageProcessor.getHeight();
+//        
+//        String sFinalCode = "";
+//        
+//        for(int i = 0; i < y; i++){
+//            String sLine = readLine(i,oImagePlus);
+//            
+//            int iCount = 0;
+//            if(mFullCodeLineCounter.containsKey(sLine)){
+//                iCount = mFullCodeLineCounter.get(sLine);   
+//            }
+//            
+//            iCount++;
+//            mFullCodeLineCounter.put(sLine, iCount);
+//            
+//            double dReliability = ((double)iCount/y) * 100;
+//            if(sLine!= "" && dReliability >= MINRELIABILITY){
+//                sFinalCode = sLine;
+//                break;
+//            }
+//        }
+//        
+        
+//        String sFinalCode = getMostReadCode(mFullCodeLineCounter);
+        
+//        int iCount =  mFullCodeLineCounter.get(sFinalCode);
+//                
+//        CodeBarResult oCodeBarResult = new CodeBarResult();
+//        oCodeBarResult.setCodeBar(sFinalCode);
+//        oCodeBarResult.setLines(iCount);
+//        oCodeBarResult.setReliability(((double)iCount/y) * 100);
+//        
+//        return oCodeBarResult;
+//    }
     
-    private static String readLine(int y, ImagePlus oImagePlus){
+    public static String readLine(int y, ImagePlus oImagePlus){
         String sResult = ""; 
         int sState = 1; 
         int posX = 0;
