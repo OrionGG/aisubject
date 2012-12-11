@@ -19,7 +19,7 @@ public class ImageThread extends Thread {
         
     
     public ImageThread(int y1, int y2, ImagePlus oImagePlusC){
-        oImagePlus = oImagePlusC;
+        oImagePlus = oImagePlusC.duplicate();
         iy1 = y1;
         iy2 = y2;
     }
@@ -39,6 +39,9 @@ public class ImageThread extends Thread {
             
             iCount++;
             mFullCodeLineCounter.put(sLine, iCount);
+            
+            
+//            System.out.println(this.getId() + "; sLine: " + sLine + "; iCount: " + iCount + "; y: " + i);
             
         }
         
