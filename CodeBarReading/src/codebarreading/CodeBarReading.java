@@ -71,17 +71,8 @@ public class CodeBarReading {
                     
                     if((oCodeBarResult.getCodeBar() == "")|| oCodeBarResult.getReliability() < MINRELIABILITY){
                         
-                        ImageProcessor oImageProcessor = oImagePlus.getProcessor();                                      
-
-                        float[] kernel2 = { 0, 0, 1, 0, 0,
-                                            0, 0, 1, 0, 0,
-                                            0, 0, 1, 0, 0,
-                                            0, 0, 1, 0, 0,
-                                            0, 0, 1, 0, 0,};
-                        oImageProcessor.convolve(kernel2, 5, 5);
-                        oImageProcessor.threshold(1);
-                        oImageProcessor.invert();
-
+                        applyKernel(oImagePlus);
+                        
                         oCodeBarResult = readFullCode(oImagePlus);
                     }                  
                     
@@ -111,52 +102,12 @@ public class CodeBarReading {
 
         //gets the height of the image and iterate
         int y = oImageProcessor.getHeight();   
+               
+        ArrayList<ImageThread> lThreads = CreateAndStartThreads(oImagePlus, y);
         
-        int yLength = y/NUMTHREADS;
+        WaitForThreadsToFinish(lThreads);
         
-        ArrayList<ImageThread> lThreads = new ArrayList<>(NUMTHREADS);
-        
-        for(int i = 0; i < NUMTHREADS; i++){
-            
-            int y1 = i * yLength;
-            int y2 = (y < (i * yLength) + (yLength * 2))?y:(i * yLength) + yLength;
-            
-            ImageThread tIT = new ImageThread(y1, y2, oImagePlus);
-            lThreads.add(tIT);
-            tIT.start();            
-        }
-        
-        for(int i = 0; i < NUMTHREADS; i++){
-            ImageThread tIT = lThreads.get(i);
-            while(tIT.isAlive()){
-                try{
-                    tIT.join();
-                }
-                catch(Exception e){
-                     System.out.println("b");
-                }
-            }
-        }
-        
-        HashMap<String, Integer> mFinalFullCodeLineCounter = new HashMap<>();
-        
-        for(int i = 0; i < NUMTHREADS; i++){
-            ImageThread tIT = lThreads.get(i);
-            
-            for(Entry<String, Integer> oEntry : tIT.mFullCodeLineCounter.entrySet()){
-                String sKey = oEntry.getKey();
-                int iValue = oEntry.getValue();  
-                if(mFinalFullCodeLineCounter.containsKey(sKey)){                    
-                    int iCount = mFinalFullCodeLineCounter.get(sKey);
-                    mFinalFullCodeLineCounter.put(sKey,iCount + iValue);
-                }
-                else{
-                    mFinalFullCodeLineCounter.put(sKey, iValue);
-                }
-            
-            }
-        }
-                
+        HashMap<String, Integer> mFinalFullCodeLineCounter = ConvineThreads(lThreads);                
         
         String sFinalCode = getMostReadCode(mFinalFullCodeLineCounter);
         
@@ -513,5 +464,74 @@ public class CodeBarReading {
         return sResult;
         
         
+    }
+
+    private static void applyKernel(ImagePlus oImagePlus) {
+        ImageProcessor oImageProcessor = oImagePlus.getProcessor();                                      
+
+        float[] kernel2 = { 0, 0, 1, 0, 0,
+                            0, 0, 1, 0, 0,
+                            0, 0, 1, 0, 0,
+                            0, 0, 1, 0, 0,
+                            0, 0, 1, 0, 0,};
+        oImageProcessor.convolve(kernel2, 5, 5);
+        oImageProcessor.threshold(1);
+        oImageProcessor.invert();
+    }
+
+    private static ArrayList<ImageThread> CreateAndStartThreads(ImagePlus oImagePlus, int y) {
+        int yLength = y/NUMTHREADS;
+        
+        ArrayList<ImageThread> lThreads = new ArrayList<>(NUMTHREADS);
+        
+        for(int i = 0; i < NUMTHREADS; i++){
+            
+            int y1 = i * yLength;
+            int y2 = (y < (i * yLength) + (yLength * 2))?y:(i * yLength) + yLength;
+            
+            ImageThread tIT = new ImageThread(y1, y2, oImagePlus);
+            lThreads.add(tIT);
+            tIT.start();            
+        }
+        
+        return lThreads;
+    }
+
+    private static void WaitForThreadsToFinish(ArrayList<ImageThread> lThreads) {
+        for(int i = 0; i < NUMTHREADS; i++){
+            ImageThread tIT = lThreads.get(i);
+            while(tIT.isAlive()){
+                try{
+                    tIT.join();
+                }
+                catch(Exception e){
+                     System.out.println("Error when waiting for thread to finish. Thread id: " + tIT.getId());
+                     System.out.println(e.getMessage());
+                }
+            }
+        }
+    }
+
+    private static HashMap<String, Integer> ConvineThreads(ArrayList<ImageThread> lThreads) {
+        HashMap<String, Integer> mFinalFullCodeLineCounter = new HashMap<>();
+        
+        for(int i = 0; i < NUMTHREADS; i++){
+            ImageThread tIT = lThreads.get(i);
+            
+            for(Entry<String, Integer> oEntry : tIT.mFullCodeLineCounter.entrySet()){
+                String sKey = oEntry.getKey();
+                int iValue = oEntry.getValue();  
+                if(mFinalFullCodeLineCounter.containsKey(sKey)){                    
+                    int iCount = mFinalFullCodeLineCounter.get(sKey);
+                    mFinalFullCodeLineCounter.put(sKey,iCount + iValue);
+                }
+                else{
+                    mFinalFullCodeLineCounter.put(sKey, iValue);
+                }
+            
+            }
+        }
+        
+        return mFinalFullCodeLineCounter;
     }
 }
