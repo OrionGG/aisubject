@@ -468,13 +468,10 @@ public class CodeBarReading {
 
     private static void applyKernel(ImagePlus oImagePlus) {
         ImageProcessor oImageProcessor = oImagePlus.getProcessor();                                      
-
-        float[] kernel2 = { 0, 0, 1, 0, 0,
-                            0, 0, 1, 0, 0,
-                            0, 0, 1, 0, 0,
-                            0, 0, 1, 0, 0,
-                            0, 0, 1, 0, 0,};
-        oImageProcessor.convolve(kernel2, 5, 5);
+        
+        float[] kernel2 = { 1,1,1,1,1};
+        
+        oImageProcessor.convolve(kernel2, 1, 5);
         oImageProcessor.threshold(1);
         oImageProcessor.invert();
     }
