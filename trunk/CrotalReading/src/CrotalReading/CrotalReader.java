@@ -218,12 +218,9 @@ public class CrotalReader {
         }
 
         ImageProcessor  oImageProcessor = img.getProcessor();
+        oImageProcessor = oImageProcessor.convertToByte(false);
         oImageProcessor.threshold(iInitialThreshold);
 
-        IJ.run(img, "Convert to Mask", "");
-        IJ.run(img, "Make Binary", "");
-
-        oImageProcessor.invertLut();
 
         oImageProcessor.erode();
         oImageProcessor.erode();
