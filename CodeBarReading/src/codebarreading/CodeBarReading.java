@@ -59,33 +59,21 @@ public class CodeBarReading {
                 
                 ArrayList<File> aListOfFiles = getFiles(sImageFolder);
                 
+                long startTime = System.currentTimeMillis();
+                
                 for (File oFile : aListOfFiles)
                 {
-                    String sAbsolutePath = oFile.getAbsolutePath();
-                    
-                    ImagePlus oImagePlus = openImage(sAbsolutePath);
+                    codeBar(oFile);                    
 
-                    System.out.println("File name: " + oImagePlus.getTitle());
-                    
-                    CodeBarResult oCodeBarResult = readFullCode(oImagePlus);
-                    
-                    if((oCodeBarResult.getCodeBar() == "")|| oCodeBarResult.getReliability() < MINRELIABILITY){
-                        
-                        applyKernel(oImagePlus);
-                        
-                        oCodeBarResult = readFullCode(oImagePlus);
-                    }                  
-                    
-                    
+                    String sAbsolutePath = oFile.getAbsolutePath();
+
+                    ImagePlus oImagePlus = openImage(sAbsolutePath);
                     String sFileName = oFile.getName();
                     saveImagePlus(args, sImageFolder, sFileName, oImagePlus);
-                        
-                    System.out.println("FinalCode: " + oCodeBarResult.getCodeBar());
-                    System.out.println("Lines: " + oCodeBarResult.getLines());
-                    System.out.println("Reliability(%): " + oCodeBarResult.getReliability());
-
                 }
                 
+                long estimatedTime = System.currentTimeMillis() - startTime;
+                System.out.println("Elapsed Time: " + estimatedTime);
             }
             else{
                 throw new java.io.IOException(IMAGEFOLDEREMPTYERROR + sImageFolder);
@@ -95,6 +83,31 @@ public class CodeBarReading {
         
         
     }
+    
+    public static  void codeBar(File oFile){
+        String sAbsolutePath = oFile.getAbsolutePath();
+                    
+        ImagePlus oImagePlus = openImage(sAbsolutePath);
+
+        System.out.println("File name: " + oImagePlus.getTitle());
+
+        CodeBarResult oCodeBarResult = readFullCode(oImagePlus);
+
+        if((oCodeBarResult.getCodeBar() == "")|| oCodeBarResult.getReliability() < MINRELIABILITY){
+
+            applyKernel(oImagePlus);
+
+            oCodeBarResult = readFullCode(oImagePlus);                       
+
+        }         
+
+        binaryzeImage(oImagePlus);
+
+        System.out.println("FinalCode: " + oCodeBarResult.getCodeBar());
+        System.out.println("Lines: " + oCodeBarResult.getLines());
+        System.out.println("Reliability(%): " + oCodeBarResult.getReliability());
+    
+    }
 
     private static CodeBarResult readFullCode(ImagePlus oImagePlus){
 
@@ -103,11 +116,11 @@ public class CodeBarReading {
         //gets the height of the image and iterate
         int y = oImageProcessor.getHeight();   
                
-        ArrayList<ImageThread> lThreads = CreateAndStartThreads(oImagePlus, y);
+        ArrayList<ImageThread> lThreads = createAndStartThreads(oImagePlus, y);
         
-        WaitForThreadsToFinish(lThreads);
+        waitForThreadsToFinish(lThreads);
         
-        HashMap<String, Integer> mFinalFullCodeLineCounter = ConvineThreads(lThreads);                
+        HashMap<String, Integer> mFinalFullCodeLineCounter = combineThreads(lThreads);                
         
         String sFinalCode = getMostReadCode(mFinalFullCodeLineCounter);
         
@@ -179,10 +192,7 @@ public class CodeBarReading {
 //        ImageConverter oImageConverter = new ImageConverter(oImagePlus) ;
 //        oImageConverter.convertToGray8();
         
-        ImageProcessor oImageProcessor = oImagePlus.getProcessor();
-        oImageProcessor = oImageProcessor.convertToByte(false);
-                
-        oImageProcessor.autoThreshold();
+        ImageProcessor oImageProcessor = binaryzeImage(oImagePlus);
 
         
         //gets all pixels of the image
@@ -192,8 +202,11 @@ public class CodeBarReading {
         
         int iPixelsCounter = 0;
         int iPreviousPixelColor = 255;
+        if(aLine.length > 0){
+            iPreviousPixelColor = aLine[0];
+        }
         
-        for(int x = 0; x < oImageProcessor.getWidth(); x++){ 
+        for(int x = 0; x < aLine.length; x++){ 
             if(aLine[x] == iPreviousPixelColor){
                     iPixelsCounter++;
             }
@@ -467,16 +480,17 @@ public class CodeBarReading {
     }
 
     private static void applyKernel(ImagePlus oImagePlus) {
-        ImageProcessor oImageProcessor = oImagePlus.getProcessor();                                      
+        ImageProcessor oImageProcessor = oImagePlus.getProcessor();    
+        
         
         float[] kernel2 = { 1,1,1,1,1};
         
         oImageProcessor.convolve(kernel2, 1, 5);
         oImageProcessor.threshold(1);
-        oImageProcessor.invert();
+        
     }
 
-    private static ArrayList<ImageThread> CreateAndStartThreads(ImagePlus oImagePlus, int y) {
+    private static ArrayList<ImageThread> createAndStartThreads(ImagePlus oImagePlus, int y) {
         int yLength = y/NUMTHREADS;
         
         ArrayList<ImageThread> lThreads = new ArrayList<>(NUMTHREADS);
@@ -494,7 +508,7 @@ public class CodeBarReading {
         return lThreads;
     }
 
-    private static void WaitForThreadsToFinish(ArrayList<ImageThread> lThreads) {
+    private static void waitForThreadsToFinish(ArrayList<ImageThread> lThreads) {
         for(int i = 0; i < NUMTHREADS; i++){
             ImageThread tIT = lThreads.get(i);
             while(tIT.isAlive()){
@@ -509,7 +523,7 @@ public class CodeBarReading {
         }
     }
 
-    private static HashMap<String, Integer> ConvineThreads(ArrayList<ImageThread> lThreads) {
+    private static HashMap<String, Integer> combineThreads(ArrayList<ImageThread> lThreads) {
         HashMap<String, Integer> mFinalFullCodeLineCounter = new HashMap<>();
         
         for(int i = 0; i < NUMTHREADS; i++){
@@ -530,5 +544,15 @@ public class CodeBarReading {
         }
         
         return mFinalFullCodeLineCounter;
+    }
+
+    private static ImageProcessor binaryzeImage(ImagePlus oImagePlus) {
+        
+        ImageProcessor oImageProcessor = oImagePlus.getProcessor();
+        oImageProcessor = oImageProcessor.convertToByte(false);
+
+        oImageProcessor.autoThreshold();
+        
+        return oImageProcessor;
     }
 }
