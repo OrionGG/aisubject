@@ -38,6 +38,8 @@ public class CrotalReader {
     
     private static int iTotalTime = 0;
     
+    private static final String IMAGEFILEOPENERROR = "ERROR Image file could not be opened: ";
+    
 
     /**
      * @param args the command line arguments
@@ -285,8 +287,7 @@ public class CrotalReader {
             oImagePlus = opener.openImage(sImagePath);
         }
         catch(Exception e){
-            
-            int a = 0;
+            System.out.println(IMAGEFILEOPENERROR + sImagePath);
         }
         
         return oImagePlus;
