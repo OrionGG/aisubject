@@ -12,37 +12,42 @@ namespace HandwrittenDigitsRecognition
         {
             List<byte[,]> oResult = new List<byte[,]>();
             //Fragmento de código que lee las imágenes
-
-            try
+            using (BinaryReader oBinaryReader = new BinaryReader(File.OpenRead(sFileName)))
             {
-                BinaryReader oBinaryReader = new BinaryReader(File.OpenRead(sFileName));
-                int vacio1 = oBinaryReader.ReadInt32();
-                int vacio2 = oBinaryReader.ReadInt32();
-                int tipo = oBinaryReader.ReadInt32();   //Valdrá 8
-                int dim = oBinaryReader.ReadInt32();    //Valdrá 3
-                int numImagenes = oBinaryReader.ReadInt32() << 24 | oBinaryReader.ReadInt32() << 16 | oBinaryReader.ReadInt32() << 8 | oBinaryReader.ReadInt32();   //Valdrá 60000
-                int ancho = oBinaryReader.ReadInt32() << 24 | oBinaryReader.ReadInt32() << 16 | oBinaryReader.ReadInt32() << 8 | oBinaryReader.ReadInt32();         //Valdrá 28
-                int alto = oBinaryReader.ReadInt32() << 24 | oBinaryReader.ReadInt32() << 16 | oBinaryReader.ReadInt32() << 8 | oBinaryReader.ReadInt32();          //Valdra 28
-
-                //Este bucle lee todas las imágenes
-                for (int c = 0; c < numImagenes; c++)
+                try
                 {
-                    byte[,] imagen = new byte[ancho, alto];
-                    for (int y = 0; y < alto; y++)
-                        for (int x = 0; x < ancho; x++)
-                        {
-                            int punto = oBinaryReader.ReadInt32();
-                            imagen[x, y] = (byte)punto;
-                        }
-                    //Aqui ya tenemos la imagen c-esima leída
-                    oResult.Add(imagen);
+                    ;
+                    int vacio1 = oBinaryReader.ReadByte();
+                    int vacio2 = oBinaryReader.ReadByte();
+                    int tipo = oBinaryReader.ReadByte();   //Valdrá 8
+                    int dim = oBinaryReader.ReadByte();    //Valdrá 3
+                    int numImagenes = oBinaryReader.ReadByte() << 24 | oBinaryReader.ReadByte() << 16 | oBinaryReader.ReadByte() << 8 | oBinaryReader.ReadByte();   //Valdrá 60000
+                    int ancho = oBinaryReader.ReadByte() << 24 | oBinaryReader.ReadByte() << 16 | oBinaryReader.ReadByte() << 8 | oBinaryReader.ReadByte();         //Valdrá 28
+                    int alto = oBinaryReader.ReadByte() << 24 | oBinaryReader.ReadByte() << 16 | oBinaryReader.ReadByte() << 8 | oBinaryReader.ReadByte();          //Valdra 28
+
+                    //Este bucle lee todas las imágenes
+                    for (int c = 0; c < numImagenes; c++)
+                    {
+                        byte[,] imagen = new byte[ancho, alto];
+                        for (int y = 0; y < alto; y++)
+                            for (int x = 0; x < ancho; x++)
+                            {
+                                int punto = oBinaryReader.ReadByte();
+                                imagen[x, y] = (byte)punto;
+                            }
+                        //Aqui ya tenemos la imagen c-esima leída
+                        oResult.Add(imagen);
+                    }
+
+                }
+                catch (IOException ex)
+                {
                 }
             }
-            catch (IOException ex)
-            {
-            }
-
+            
             return oResult;
         }
+
+        
     }
 }
