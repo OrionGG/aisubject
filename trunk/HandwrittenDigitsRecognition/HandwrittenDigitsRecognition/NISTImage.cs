@@ -6,8 +6,12 @@ using System.IO;
 
 namespace HandwrittenDigitsRecognition
 {
+
+
     class NISTImage
     {
+        private const string ERROR_READING = "Error when reading file: ";
+
         public static List<byte[,]> Read(string sFileName)
         {
             List<byte[,]> oResult = new List<byte[,]>();
@@ -16,7 +20,6 @@ namespace HandwrittenDigitsRecognition
             {
                 try
                 {
-                    ;
                     int vacio1 = oBinaryReader.ReadByte();
                     int vacio2 = oBinaryReader.ReadByte();
                     int tipo = oBinaryReader.ReadByte();   //Valdrá 8
@@ -42,6 +45,7 @@ namespace HandwrittenDigitsRecognition
                 }
                 catch (IOException ex)
                 {
+                    Console.WriteLine(ERROR_READING + ex.Message);
                 }
             }
             

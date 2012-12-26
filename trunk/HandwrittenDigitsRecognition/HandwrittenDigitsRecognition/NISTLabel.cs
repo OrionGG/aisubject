@@ -8,6 +8,8 @@ namespace HandwrittenDigitsRecognition
 {
     class NISTLabel
     {
+        private const string ERROR_READING = "Error when reading file: ";
+
         public static List<int> Read(string sFileName)
         {
             List<int> lResutl = new List<int>();
@@ -33,6 +35,7 @@ namespace HandwrittenDigitsRecognition
                 }
                 catch (IOException ex)
                 {
+                    Console.WriteLine(ERROR_READING + ex.Message);
                 }
             }
 

@@ -6,7 +6,7 @@
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{F0814169-222E-4EA9-9DCD-2C7251EEC5B1}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>HandwrittenDigitsRecognition</RootNamespace>
     <AssemblyName>HandwrittenDigitsRecognition</AssemblyName>
@@ -33,10 +33,15 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>HandwrittenDigitsRecognition.Program</StartupObject>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="encog-core-cs">
       <HintPath>lib\encog-core-cs.dll</HintPath>
     </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
@@ -48,6 +53,7 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Form1.cs">
@@ -56,6 +62,7 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="HandwrittenDigitsRecongnition.cs" />
     <Compile Include="NISTImage.cs" />
     <Compile Include="NISTLabel.cs" />
     <Compile Include="Program.cs" />
