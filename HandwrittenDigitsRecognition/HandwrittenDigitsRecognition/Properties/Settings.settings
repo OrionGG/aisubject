@@ -1,0 +1,51 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="HandwrittenDigitsRecognition.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="TrainNISTImageFile" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">D:\Master Vision Artificial\AI\Practicas\Tena9-PracticaReconocimientoDigitos\train-images.idx3-ubyte</Value>
+    </Setting>
+    <Setting Name="TrainNISTLabeleFile" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">D:\Master Vision Artificial\AI\Practicas\Tena9-PracticaReconocimientoDigitos\train-labels.idx1-ubyte</Value>
+    </Setting>
+    <Setting Name="TestNISTImageFile" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">D:\Master Vision Artificial\AI\Practicas\Tena9-PracticaReconocimientoDigitos\t10k-images.idx3-ubyte</Value>
+    </Setting>
+    <Setting Name="TestNISTLabeleFile" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">D:\Master Vision Artificial\AI\Practicas\Tena9-PracticaReconocimientoDigitos\t10k-labels.idx1-ubyte</Value>
+    </Setting>
+    <Setting Name="HiddenLayerNeurons" Type="System.String" Scope="Application">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="ROW_COUNT" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">60000</Value>
+    </Setting>
+    <Setting Name="INPUT_COUNT" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">49</Value>
+    </Setting>
+    <Setting Name="OUTPUT_COUNT" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">10</Value>
+    </Setting>
+    <Setting Name="ITERATIONS" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">5000</Value>
+    </Setting>
+    <Setting Name="TrainCSVFile" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">D:\Master Vision Artificial\AI\Projects\HandWrittenDigits\HandWrittenDigitsTraining.csv</Value>
+    </Setting>
+    <Setting Name="TestCSVFile" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">D:\Master Vision Artificial\AI\Projects\HandWrittenDigits\HandWrittenDigitsTest.csv</Value>
+    </Setting>
+    <Setting Name="XMLPersistBasicNetwork" Type="System.String" Scope="Application">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="MAX_iMAGE_DIMENSION" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">28</Value>
+    </Setting>
+    <Setting Name="LEARN_ERROR" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">0.00001</Value>
+    </Setting>
+    <Setting Name="MOMENTUM" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">0.0</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
