@@ -25,8 +25,7 @@ namespace HandwrittenDigitsRecognition.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("D:\\Master Vision Artificial\\AI\\Practicas\\Tena9-PracticaReconocimientoDigitos\\trai" +
-            "n-images.idx3-ubyte")]
+        [global::System.Configuration.DefaultSettingValueAttribute(".\\DataFiles\\train-images.idx3-ubyte")]
         public string TrainNISTImageFile {
             get {
                 return ((string)(this["TrainNISTImageFile"]));
@@ -35,8 +34,7 @@ namespace HandwrittenDigitsRecognition.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("D:\\Master Vision Artificial\\AI\\Practicas\\Tena9-PracticaReconocimientoDigitos\\trai" +
-            "n-labels.idx1-ubyte")]
+        [global::System.Configuration.DefaultSettingValueAttribute(".\\DataFiles\\train-labels.idx1-ubyte")]
         public string TrainNISTLabeleFile {
             get {
                 return ((string)(this["TrainNISTLabeleFile"]));
@@ -45,8 +43,7 @@ namespace HandwrittenDigitsRecognition.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("D:\\Master Vision Artificial\\AI\\Practicas\\Tena9-PracticaReconocimientoDigitos\\t10k" +
-            "-images.idx3-ubyte")]
+        [global::System.Configuration.DefaultSettingValueAttribute(".\\DataFiles\\t10k-images.idx3-ubyte")]
         public string TestNISTImageFile {
             get {
                 return ((string)(this["TestNISTImageFile"]));
@@ -55,8 +52,7 @@ namespace HandwrittenDigitsRecognition.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("D:\\Master Vision Artificial\\AI\\Practicas\\Tena9-PracticaReconocimientoDigitos\\t10k" +
-            "-labels.idx1-ubyte")]
+        [global::System.Configuration.DefaultSettingValueAttribute(".\\DataFiles\\t10k-labels.idx1-ubyte")]
         public string TestNISTLabeleFile {
             get {
                 return ((string)(this["TestNISTLabeleFile"]));
@@ -65,7 +61,7 @@ namespace HandwrittenDigitsRecognition.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("49")]
         public string HiddenLayerNeurons {
             get {
                 return ((string)(this["HiddenLayerNeurons"]));
@@ -83,7 +79,7 @@ namespace HandwrittenDigitsRecognition.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("49")]
+        [global::System.Configuration.DefaultSettingValueAttribute("196")]
         public string INPUT_COUNT {
             get {
                 return ((string)(this["INPUT_COUNT"]));
@@ -110,8 +106,7 @@ namespace HandwrittenDigitsRecognition.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("D:\\Master Vision Artificial\\AI\\Projects\\HandWrittenDigits\\HandWrittenDigitsTraini" +
-            "ng.csv")]
+        [global::System.Configuration.DefaultSettingValueAttribute(".\\HandWrittenDigitsTraining.csv")]
         public string TrainCSVFile {
             get {
                 return ((string)(this["TrainCSVFile"]));
@@ -120,8 +115,7 @@ namespace HandwrittenDigitsRecognition.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("D:\\Master Vision Artificial\\AI\\Projects\\HandWrittenDigits\\HandWrittenDigitsTest.c" +
-            "sv")]
+        [global::System.Configuration.DefaultSettingValueAttribute(".\\HandWrittenDigitsTest.csv")]
         public string TestCSVFile {
             get {
                 return ((string)(this["TestCSVFile"]));

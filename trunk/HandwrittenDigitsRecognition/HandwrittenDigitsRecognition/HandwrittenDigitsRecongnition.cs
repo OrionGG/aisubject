@@ -22,6 +22,8 @@ namespace HandwrittenDigitsRecognition
         private const int MAX_POINT_VALUE = 255;
         private const int BASE = 2;
         private const int iMaxIterationNoImprove = 10;
+        private const double dMinImproving = 0.01;
+
 
        
 
@@ -110,11 +112,12 @@ namespace HandwrittenDigitsRecognition
                 train.Iteration();
 
 
-                Console.WriteLine("Error: " + train.Error + "; Iteration: " + i);
+                Console.WriteLine("Error: " + train.Error + "; Iteration: " + i + "; Time: " + sw.ElapsedMilliseconds);
 
                 RefreshMinError(train, ref iMinErrorIteration, ref dMinError, i);
 
                 bImproving = CheckImproving(train, ref error1, ref iIterationNoImprove, ref iExitIteration, i);
+
             }
 
             Console.WriteLine("Min Error Iteration:" + iMinErrorIteration + "; Error: " + dMinError + "; Iteration Exit: " + iExitIteration);
@@ -128,7 +131,7 @@ namespace HandwrittenDigitsRecognition
             bool bImproving = true;
             double error2 = train.Error;
             double improve = (error1 - error2) / error1;
-            if (improve < 0.01)
+            if (improve < dMinImproving)
             {
                 iIterationNoImprove++;
             }
