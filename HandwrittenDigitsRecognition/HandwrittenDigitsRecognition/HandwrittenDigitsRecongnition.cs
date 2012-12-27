@@ -194,6 +194,7 @@ namespace HandwrittenDigitsRecognition
 
         #region Testing
 
+
         public static bool Test(BasicNetwork network)
         {
             bool bResult = false;
@@ -216,7 +217,7 @@ namespace HandwrittenDigitsRecognition
             return bResult;
         }
 
-        public static void TestBPROP(double[][] input, double[][] output, BasicNetwork network)
+        private static void TestBPROP(double[][] input, double[][] output, BasicNetwork network)
         {
             IMLDataSet trainingData = new BasicMLDataSet(input, output);
 
@@ -224,7 +225,7 @@ namespace HandwrittenDigitsRecognition
             TestTraining(bprop, 0.01);
         }
 
-        public static void TestTraining(IMLTrain train, double requiredImprove)
+        private static void TestTraining(IMLTrain train, double requiredImprove)
         {
 
             Console.WriteLine("Running test ...");
@@ -410,11 +411,39 @@ namespace HandwrittenDigitsRecognition
         #endregion
 
         #region SaveFiles
-        private static bool SaveNetworkInXML(BasicNetwork network)
+        public static BasicNetwork ReadNetworkFromXML()
         {
-            bool bResult = false;
+            BasicNetwork network = null;
+            string sXMLPersistBasicNetwork = GetXmlBasicNetworkFile();
+
             PersistBasicNetwork oPersistBasicNetwork = new PersistBasicNetwork();
 
+            using (FileStream fs = File.Create(sXMLPersistBasicNetwork))
+            {
+                network = (BasicNetwork) oPersistBasicNetwork.Read(fs);
+            }
+            return network;
+
+        }
+
+
+        public static bool SaveNetworkInXML(BasicNetwork network)
+        {
+            bool bResult = false;
+            string sXMLPersistBasicNetwork = GetXmlBasicNetworkFile();
+
+            using (FileStream fs = File.Create(sXMLPersistBasicNetwork))
+            {
+
+                PersistBasicNetwork oPersistBasicNetwork = new PersistBasicNetwork();
+                oPersistBasicNetwork.Save(fs, network);
+                bResult = true;
+            }
+            return bResult;
+        }
+
+        private static string GetXmlBasicNetworkFile()
+        {
             string sXMLPersistBasicNetwork = Settings.Default.XMLPersistBasicNetwork.Trim();
             if (string.IsNullOrEmpty(Settings.Default.XMLPersistBasicNetwork.Trim()))
             {
@@ -422,13 +451,10 @@ namespace HandwrittenDigitsRecognition
                 sXMLPersistBasicNetwork = Path.Combine(sXMLPersistBasicNetwork, "XMLPersistBasicNetwork.xml");
             }
 
-            using (FileStream fs = File.Create(sXMLPersistBasicNetwork))
-            {
-                oPersistBasicNetwork.Save(fs, network);
-                bResult = true;
-            }
-            return bResult;
+
+            return sXMLPersistBasicNetwork;
         }
+
 
         private static bool SaveToCSV(double[][] input, double[][] output)
         {
