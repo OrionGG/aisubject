@@ -61,7 +61,7 @@ namespace HandwrittenDigitsRecognition.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("49")]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string HiddenLayerNeurons {
             get {
                 return ((string)(this["HiddenLayerNeurons"]));

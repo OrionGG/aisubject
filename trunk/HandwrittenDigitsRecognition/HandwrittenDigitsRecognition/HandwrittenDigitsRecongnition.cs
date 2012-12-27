@@ -110,13 +110,17 @@ namespace HandwrittenDigitsRecognition
             for (int i = 0; i < iIterations && bImproving; i++)
             {
                 train.Iteration();
-
-
-                Console.WriteLine("Error: " + train.Error + "; Iteration: " + i + "; Time: " + sw.ElapsedMilliseconds);
-
+                
                 RefreshMinError(train, ref iMinErrorIteration, ref dMinError, i);
 
-                bImproving = CheckImproving(train, ref error1, ref iIterationNoImprove, ref iExitIteration, i);
+
+                double error2 = train.Error;
+                double improve = (error1 - error2) / error1;
+
+                bImproving = CheckImproving(train, i, improve, ref error1, ref iIterationNoImprove, ref iExitIteration);
+
+
+                Console.WriteLine("Error: " + train.Error + "; Improve: " + improve + "; Iteration: " + i + "; Time: " + sw.ElapsedMilliseconds);
 
             }
 
@@ -126,11 +130,9 @@ namespace HandwrittenDigitsRecognition
             return sw;
         }
 
-        private static bool CheckImproving(IMLTrain train, ref double error1, ref int iIterationNoImprove, ref int iExitIteration, int i)
+        private static bool CheckImproving(IMLTrain train, int i, double improve, ref double error1, ref int iIterationNoImprove, ref int iExitIteration)
         {
             bool bImproving = true;
-            double error2 = train.Error;
-            double improve = (error1 - error2) / error1;
             if (improve < dMinImproving)
             {
                 iIterationNoImprove++;
@@ -146,7 +148,6 @@ namespace HandwrittenDigitsRecognition
                 bImproving = false;
             }
 
-            error1 = error2;
 
             return bImproving;
         }

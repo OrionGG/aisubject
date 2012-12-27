@@ -15,7 +15,7 @@
       <Value Profile="(Default)">.\DataFiles\t10k-labels.idx1-ubyte</Value>
     </Setting>
     <Setting Name="HiddenLayerNeurons" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">49</Value>
+      <Value Profile="(Default)" />
     </Setting>
     <Setting Name="ROW_COUNT" Type="System.String" Scope="Application">
       <Value Profile="(Default)">60000</Value>
