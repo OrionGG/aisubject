@@ -34,8 +34,8 @@ namespace HandwrittenDigitsRecognition
                             break;
 	                }                    
                     break;
-                case 2: 
-                    if (args[0] == TRAIN && args[1] == TEST)
+                case 2:
+                    if (args[0] == TRAIN && args[1] == SAVETRAIN)
                     {
                         HandwrittenDigitsRecongnition.SaveNetworkInXML(HandwrittenDigitsRecongnition.TrainNetwork());
                     }
@@ -45,7 +45,7 @@ namespace HandwrittenDigitsRecognition
                     }
                     break;
                 case 3:
-                    if (args[0] == TRAIN && args[1] == TEST && args[2] == TEST)
+                    if (args[0] == TRAIN && args[1] == SAVETRAIN && args[2] == TEST)
                     {
                         HandwrittenDigitsRecongnition.SaveNetworkInXML(HandwrittenDigitsRecongnition.TrainNetwork());
                         HandwrittenDigitsRecongnition.Test(HandwrittenDigitsRecongnition.ReadNetworkFromXML());
