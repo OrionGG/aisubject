@@ -25,20 +25,10 @@ namespace HandwrittenDigitsRecognition
         private const double dMinImproving = 0.01;
 
 
-       
-
-        public static void Calcule()
-        {
-            BasicNetwork oBasicNetwork = TrainNetwork();
-
-
-        }
-
         #region Training
 
-        public static BasicNetwork TrainNetwork()
+        public static BasicNetwork TrainNetwork(BasicNetwork oBasicNetwork)
         {
-            BasicNetwork oBasicNetwork = null;
             int iRowCount = 0;
             int.TryParse(Settings.Default.ROW_COUNT, out iRowCount);
             Console.WriteLine("Rows Count: " + iRowCount);
@@ -76,7 +66,10 @@ namespace HandwrittenDigitsRecognition
 
         public static long HandWrittenDigitsEncog(double[][] input, double[][] output, ref BasicNetwork network, double dLearnError, double dMomentum)
         {
-            network = CreateNetwork(input, output, network);
+            if (network == null)
+            {
+                network = CreateNetwork(input, output, network);
+            }
 
             IMLDataSet trainingSet = new BasicMLDataSet(input, output);
 
@@ -419,9 +412,12 @@ namespace HandwrittenDigitsRecognition
 
             PersistBasicNetwork oPersistBasicNetwork = new PersistBasicNetwork();
 
-            using (FileStream fs = File.Create(sXMLPersistBasicNetwork))
+            if (File.Exists(sXMLPersistBasicNetwork))
             {
-                network = (BasicNetwork) oPersistBasicNetwork.Read(fs);
+                using (FileStream fs = File.OpenRead(sXMLPersistBasicNetwork))
+                {
+                    network = (BasicNetwork)oPersistBasicNetwork.Read(fs);
+                }
             }
             return network;
 
