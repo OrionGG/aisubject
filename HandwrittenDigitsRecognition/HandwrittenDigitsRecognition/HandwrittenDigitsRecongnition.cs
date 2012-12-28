@@ -20,7 +20,7 @@ namespace HandwrittenDigitsRecognition
     class HandwrittenDigitsRecongnition
     {
         private const int MAX_POINT_VALUE = 255;
-        private const int BASE = 2;
+        private const int BASE = 256;
         private const int iMaxIterationNoImprove = 10;
         private const double dMinImproving = 0.01;
 
