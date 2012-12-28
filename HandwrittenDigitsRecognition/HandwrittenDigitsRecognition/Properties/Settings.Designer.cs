@@ -97,7 +97,7 @@ namespace HandwrittenDigitsRecognition.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("5000")]
+        [global::System.Configuration.DefaultSettingValueAttribute("500")]
         public string ITERATIONS {
             get {
                 return ((string)(this["ITERATIONS"]));

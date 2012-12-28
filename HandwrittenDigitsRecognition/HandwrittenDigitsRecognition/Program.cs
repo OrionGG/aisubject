@@ -7,6 +7,7 @@ namespace HandwrittenDigitsRecognition
 {
     static class Program
     {
+
         private const string TRAIN = "/train";
         private const string SAVETRAIN = "/savetrain";
         private const string TEST = "/test";
@@ -24,7 +25,7 @@ namespace HandwrittenDigitsRecognition
                     switch (args[0].ToLower())
 	                {
                         case TRAIN:
-                            HandwrittenDigitsRecongnition.TrainNetwork();
+                            HandwrittenDigitsRecongnition.TrainNetwork(HandwrittenDigitsRecongnition.ReadNetworkFromXML());
                             break;
                         case TEST:
                             HandwrittenDigitsRecongnition.Test(HandwrittenDigitsRecongnition.ReadNetworkFromXML());
@@ -37,7 +38,9 @@ namespace HandwrittenDigitsRecognition
                 case 2:
                     if (args[0] == TRAIN && args[1] == SAVETRAIN)
                     {
-                        HandwrittenDigitsRecongnition.SaveNetworkInXML(HandwrittenDigitsRecongnition.TrainNetwork());
+                        HandwrittenDigitsRecongnition.SaveNetworkInXML(
+                            HandwrittenDigitsRecongnition.TrainNetwork(
+                            HandwrittenDigitsRecongnition.ReadNetworkFromXML()));
                     }
                     else
                     {
@@ -47,8 +50,11 @@ namespace HandwrittenDigitsRecognition
                 case 3:
                     if (args[0] == TRAIN && args[1] == SAVETRAIN && args[2] == TEST)
                     {
-                        HandwrittenDigitsRecongnition.SaveNetworkInXML(HandwrittenDigitsRecongnition.TrainNetwork());
-                        HandwrittenDigitsRecongnition.Test(HandwrittenDigitsRecongnition.ReadNetworkFromXML());
+                        HandwrittenDigitsRecongnition.SaveNetworkInXML(
+                            HandwrittenDigitsRecongnition.TrainNetwork(
+                            HandwrittenDigitsRecongnition.ReadNetworkFromXML()));
+                        HandwrittenDigitsRecongnition.Test(
+                            HandwrittenDigitsRecongnition.ReadNetworkFromXML());
                     }
                     else
                     {
