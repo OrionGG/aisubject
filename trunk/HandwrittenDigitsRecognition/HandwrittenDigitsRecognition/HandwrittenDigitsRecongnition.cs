@@ -113,7 +113,7 @@ namespace HandwrittenDigitsRecognition
                 bImproving = CheckImproving(train, i, improve, ref error1, ref iIterationNoImprove, ref iExitIteration);
 
 
-                Console.WriteLine("Error: " + train.Error + "; Improve: " + improve.ToString("#.####") + "; Iteration: " + i + "; Time: " + sw.ElapsedMilliseconds);
+                Console.WriteLine("Error: " + train.Error + "; Improve: " + improve.ToString("##.####") + "; Iteration: " + i);
 
             }
 
