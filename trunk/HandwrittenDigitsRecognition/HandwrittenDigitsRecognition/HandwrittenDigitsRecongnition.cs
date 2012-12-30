@@ -185,17 +185,7 @@ namespace HandwrittenDigitsRecognition
         }
 
         private static void Test(double[][] input, double[][] output, BasicNetwork network)
-        {
-
-            double dLearnError = 0.0;
-            double.TryParse(Settings.Default.LEARN_ERROR.Replace(".", ","), out dLearnError);
-            Console.WriteLine("Learn Error: " + dLearnError);
-
-            double dMomentum = 0.0;
-            double.TryParse(Settings.Default.MOMENTUM.Replace(".", ","), out dMomentum);
-            Console.WriteLine("Momentum: " + dMomentum);
-
-            
+        {            
             IMLDataSet oMLDataSet = new BasicMLDataSet(input, output);
 
               
