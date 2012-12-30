@@ -97,7 +97,7 @@ namespace HandwrittenDigitsRecognition
             int iExitIteration = iIterations;
 
 
-            for (int i = 0; sw.ElapsedMilliseconds<300000 && i < iIterations; i++)
+            for (int i = 0; i < iIterations; i++)
             {
                 train.Iteration();
                 
@@ -178,28 +178,29 @@ namespace HandwrittenDigitsRecognition
             double[][] inputTest = Generate(lTestImage, lTestImage.Count, iInputCount);
             double[][] outputTest = Generate(lTestLabel, lTestLabel.Count, iOutputCount);
 
-            TestBPROP(inputTest, outputTest, network);
+            Test(inputTest, outputTest, network);
 
             bResult = true;
             return bResult;
         }
 
-        private static void TestBPROP(double[][] input, double[][] output, BasicNetwork network)
-        {
-            IMLDataSet trainingData = new BasicMLDataSet(input, output);
-
-            IMLTrain bprop = new Backpropagation(network, trainingData, 0.7, 0.9);
-            TestTraining(bprop, 0.01);
-        }
-
-        private static void TestTraining(IMLTrain train, double requiredImprove)
+        private static void Test(double[][] input, double[][] output, BasicNetwork network)
         {
 
-            Console.WriteLine("Running test ...");
-            train.Iteration();
-            double dError = train.Error;
+            double dLearnError = 0.0;
+            double.TryParse(Settings.Default.LEARN_ERROR.Replace(".", ","), out dLearnError);
+            Console.WriteLine("Learn Error: " + dLearnError);
 
-            Console.WriteLine("Error : " + dError);
+            double dMomentum = 0.0;
+            double.TryParse(Settings.Default.MOMENTUM.Replace(".", ","), out dMomentum);
+            Console.WriteLine("Momentum: " + dMomentum);
+
+            
+            IMLDataSet oMLDataSet = new BasicMLDataSet(input, output);
+
+              
+            double dError = network.CalculateError(oMLDataSet);
+			Console.WriteLine("Test error: " + dError);            
         }
 
 
