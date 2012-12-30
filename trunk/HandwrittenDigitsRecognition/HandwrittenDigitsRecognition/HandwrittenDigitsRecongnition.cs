@@ -19,10 +19,8 @@ namespace HandwrittenDigitsRecognition
 {
     class HandwrittenDigitsRecongnition
     {
-        private const int MAX_POINT_VALUE = 255;
         private const int BASE = 256;
-        private const int iMaxIterationNoImprove = 10;
-        private const double dMinImproving = 0.01;
+        private const int iModificationRange = 10;
 
 
         #region Training
@@ -76,12 +74,12 @@ namespace HandwrittenDigitsRecognition
             //// train the neural network
             IMLTrain train = new Backpropagation(network, trainingSet, dLearnError, dMomentum);
 
-            var sw = StartTraining(train);
+            var sw = StartTraining(train, dLearnError, dMomentum);
 
             return sw.ElapsedMilliseconds;
         }
 
-        private static Stopwatch StartTraining(IMLTrain train)
+        private static Stopwatch StartTraining(IMLTrain train, double dLearnError, double dMomentum)
         {
             var sw = new Stopwatch();
             sw.Start();
@@ -90,7 +88,6 @@ namespace HandwrittenDigitsRecognition
             double dMinError = 1.0;
 
             double error1 = 1.0;
-            int iIterationNoImprove = 0;
 
             //// run epoch of learning procedure
             int iIterations = 0;
@@ -99,8 +96,8 @@ namespace HandwrittenDigitsRecognition
 
             int iExitIteration = iIterations;
 
-            bool bImproving = true;
-            for (int i = 0; i < iIterations && bImproving; i++)
+
+            for (int i = 0; sw.ElapsedMilliseconds<300000 && i < iIterations; i++)
             {
                 train.Iteration();
                 
@@ -110,39 +107,15 @@ namespace HandwrittenDigitsRecognition
                 double error2 = train.Error;
                 double improve = (error1 - error2) / error1;
 
-                bImproving = CheckImproving(train, i, improve, ref error1, ref iIterationNoImprove, ref iExitIteration);
-
-
-                Console.WriteLine("Error: " + train.Error + "; Improve: " + improve.ToString("##.####") + "; Iteration: " + i);
-
+                Console.WriteLine("Error: " + error2 + "; Improve: " + improve + "; Iteration: " + i);
+             
+                error1 = error2;
             }
 
             Console.WriteLine("Min Error Iteration:" + iMinErrorIteration + "; Error: " + dMinError + "; Iteration Exit: " + iExitIteration);
 
             sw.Stop();
             return sw;
-        }
-
-        private static bool CheckImproving(IMLTrain train, int i, double improve, ref double error1, ref int iIterationNoImprove, ref int iExitIteration)
-        {
-            bool bImproving = true;
-            if (improve < dMinImproving)
-            {
-                iIterationNoImprove++;
-            }
-            else
-            {
-                iIterationNoImprove = 0;
-            }
-
-            if (iMaxIterationNoImprove < iIterationNoImprove && improve < 0)
-            {
-                iExitIteration = i;
-                bImproving = false;
-            }
-
-
-            return bImproving;
         }
 
         private static void RefreshMinError(IMLTrain train, ref int iMinErrorIteration, ref double dMinError, int i)
@@ -295,7 +268,8 @@ namespace HandwrittenDigitsRecognition
                     }
 
                     double dMaxPowerValue = Math.Pow(BASE, (iHEIGHT_RESIZE * iWIDTH_RESIZE)) - 1;
-                    dValue = dValue / (dMaxPowerValue * MAX_POINT_VALUE);
+                    //normalize the value bad for low values
+                    dValue = dValue / dMaxPowerValue;
                     aResult[i][l] = dValue;
                     l++;
                 }
