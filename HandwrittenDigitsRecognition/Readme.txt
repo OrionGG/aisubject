@@ -4,7 +4,9 @@ HandwrittenDigitsRecognition: code of the practise.
 HandwrittenDigitsRecognition.sln: Visual Studio solution.
 Release.zip: Bins for the execution.
 
+IMPORTANT: place the NIST files in the DataFiles Folder.
 
+for running the application:
 HandwrittenDigitsRecognition.exe options
 
 options (can be concatenated):
